@@ -1,0 +1,2207 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bahce Danismani v3</title>
+<meta name="theme-color" content="#8b1a1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bahçe Danışmanı">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.svg">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+:root{
+  --ink:#1a1209;--warm:#fdfaf4;--r1:#8b1a1a;--r2:#c0392b;--rlt:#fde8e8;
+  --g1:#b5843a;--g2:#e4b96a;--gbg:#fef3d8;
+  --grn:#2d5a27;--grn2:#4a8c3f;--grnbg:#e8f5e4;
+  --e1:#6b4226;--ebg:#f5ead8;
+  --b1:#1a5c8b;--bbg:#e0eef8;
+  --brd:rgba(26,18,9,.1);--shd:0 2px 16px rgba(26,18,9,.07);--rad:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"DM Sans",sans-serif;background:var(--warm);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.6}
+header{background:var(--r1);color:#f7f0e3;padding:16px 18px 12px;position:relative;overflow:hidden}
+header::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(-45deg,transparent,transparent 18px,rgba(255,255,255,.025) 18px,rgba(255,255,255,.025) 19px)}
+.hi{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:12px;position:relative}
+.logo{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.htxt h1{font-family:"Fraunces",serif;font-size:1.28rem;font-weight:700;line-height:1.1}
+.htxt p{font-size:.75rem;opacity:.55;margin-top:2px}
+.hpill{margin-left:auto;display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);padding:4px 10px;border-radius:99px;font-size:.7rem;white-space:nowrap;flex-shrink:0}
+.dot{width:6px;height:6px;border-radius:50%;background:#6ee46e;animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(110,228,110,.5)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.nav{background:#fff;border-bottom:1px solid var(--brd);position:sticky;top:0;z-index:200;box-shadow:0 1px 5px rgba(26,18,9,.05)}
+.nav-in{max-width:900px;margin:0 auto;display:flex;overflow-x:auto;scrollbar-width:none}
+.nav-in::-webkit-scrollbar{display:none}
+.ntab{flex-shrink:0;padding:11px 13px;font-size:.78rem;font-weight:500;cursor:pointer;border:none;background:transparent;color:rgba(26,18,9,.4);border-bottom:2.5px solid transparent;transition:all .14s;font-family:"DM Sans",sans-serif;white-space:nowrap}
+.ntab.active{color:var(--r1);border-bottom-color:var(--r1)}
+.ntab:hover:not(.active){color:var(--ink)}
+main{max-width:900px;margin:0 auto;padding:18px 14px 60px}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.card{background:#fff;border:1px solid var(--brd);border-radius:var(--rad);padding:18px;margin-bottom:13px;box-shadow:var(--shd)}
+.slabel{font-size:.65rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--g1);margin-bottom:11px;display:flex;align-items:center;gap:7px}
+.slabel::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--brd),transparent)}
+/* MEYVE DROPDOWN */
+.meyve-dropdown{position:relative;margin-bottom:14px}
+.meyve-trigger{width:100%;padding:10px 14px;border:1.5px solid var(--brd);border-radius:9px;background:#fff;font-family:"DM Sans",sans-serif;font-size:.88rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:9px;transition:border-color .14s;text-align:left}
+.meyve-trigger:hover,.meyve-trigger.open{border-color:var(--r1)}
+.meyve-trigger .sel-ico{font-size:1.15rem}.meyve-trigger .sel-txt{flex:1;font-weight:500}
+.meyve-trigger .sel-cesit{font-size:.73rem;color:rgba(26,18,9,.38);margin-left:3px}
+.meyve-trigger .arr{font-size:.68rem;opacity:.38;transition:transform .18s}
+.meyve-trigger.open .arr{transform:rotate(180deg)}
+.meyve-menu{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1.5px solid var(--r1);border-radius:9px;box-shadow:0 8px 28px rgba(26,18,9,.12);z-index:300;max-height:360px;overflow-y:auto}
+.meyve-menu.open{display:block}
+.meyve-grup-hd{padding:7px 13px 3px;font-size:.63rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--g1);background:var(--warm);border-bottom:1px solid var(--brd);position:sticky;top:0}
+.meyve-item{padding:8px 13px;font-size:.84rem;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .1s}
+.meyve-item:hover{background:var(--warm)}.meyve-item.active{background:var(--rlt);color:var(--r1)}
+.meyve-item .mi-ico{font-size:1.05rem;flex-shrink:0}.meyve-item .mi-txt{flex:1}
+.meyve-item .mi-tag{font-size:.63rem;background:var(--gbg);color:#7a4f00;padding:1px 6px;border-radius:99px;font-weight:600}
+/* PILLS */
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.pill{padding:5px 12px;border-radius:99px;border:1.5px solid var(--brd);background:transparent;font-family:"DM Sans",sans-serif;font-size:.78rem;cursor:pointer;color:rgba(26,18,9,.5);transition:all .14s}
+.pill:hover{border-color:var(--g1);color:var(--g1)}.pill.active{border-color:var(--r1);background:var(--r1);color:#fff}
+/* DROP ZONE */
+.dz{border:2px dashed rgba(26,18,9,.13);border-radius:9px;padding:28px 16px;text-align:center;cursor:pointer;position:relative;transition:all .16s;background:var(--warm)}
+.dz:hover,.dz.over{border-color:var(--r1);background:rgba(139,26,26,.03)}
+.dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-ico{font-size:1.8rem;margin-bottom:6px}.dz-t{font-family:"Fraunces",serif;font-size:.88rem;font-weight:300;margin-bottom:2px}.dz-s{font-size:.71rem;color:rgba(26,18,9,.35)}
+/* MULTI PHOTO PREVIEW */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:11px}
+.photo-thumb{position:relative;aspect-ratio:1;border-radius:7px;overflow:hidden;border:1.5px solid var(--brd)}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-thumb .rm-x{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;font-size:.65rem;display:flex;align-items:center;justify-content:center}
+.photo-thumb .rm-x:hover{background:var(--r1)}
+.prev-wrap{display:none;margin-top:11px;position:relative}
+.prev-img{width:100%;border-radius:8px;max-height:260px;object-fit:contain;background:var(--warm);border:1px solid var(--brd)}
+.rm-btn{position:absolute;top:5px;right:5px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:none;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.rm-btn:hover{background:var(--r1)}
+/* VOICE BTN */
+.voice-btn{display:flex;align-items:center;gap:7px;padding:8px 14px;border:1.5px solid var(--brd);border-radius:99px;background:transparent;font-family:"DM Sans",sans-serif;font-size:.82rem;cursor:pointer;color:rgba(26,18,9,.55);transition:all .15s;margin-top:9px}
+.voice-btn:hover{border-color:var(--b1);color:var(--b1)}.voice-btn.recording{background:var(--r1);color:#fff;border-color:var(--r1);animation:blink .8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.6}}
+.voice-text{font-size:.82rem;color:rgba(26,18,9,.5);margin-top:6px;padding:8px 11px;background:var(--warm);border-radius:7px;border:1px solid var(--brd);display:none;line-height:1.55}
+.voice-text.show{display:block}
+/* ERROR / NOTE */
+.errbox{background:#fff0f0;border:1px solid rgba(192,57,43,.25);border-radius:8px;padding:9px 13px;font-size:.82rem;color:var(--r2);display:none;margin-top:8px}
+.errbox.show{display:block}
+.note{border-radius:8px;padding:10px 13px;font-size:.82rem;margin:8px 0;display:flex;gap:8px;align-items:flex-start}
+.note.info{background:var(--bbg);border:1px solid rgba(26,92,139,.16);color:#1a3a6b}
+.note.warn{background:var(--gbg);border:1px solid rgba(181,132,58,.2);color:#7a4f00}
+.note.earth{background:var(--ebg);border:1px solid rgba(107,66,38,.16);color:var(--e1)}
+.nico{font-size:.95rem;flex-shrink:0;margin-top:1px}
+/* BUTTONS */
+.btn{width:100%;margin-top:12px;padding:12px;border:none;border-radius:9px;font-family:"Fraunces",serif;font-size:.93rem;font-weight:700;letter-spacing:.03em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .18s}
+.btn-red{background:var(--r1);color:#f7f0e3}.btn-red:hover:not(:disabled){background:#6e1212;transform:translateY(-1px);box-shadow:0 5px 14px rgba(139,26,26,.28)}
+.btn-earth{background:var(--e1);color:#f7f0e3}.btn-earth:hover:not(:disabled){background:#4e2f1a;transform:translateY(-1px);box-shadow:0 5px 14px rgba(107,66,38,.28)}
+.btn-grn{background:var(--grn);color:#f7f0e3}.btn-grn:hover:not(:disabled){background:#1e3d1a;transform:translateY(-1px);box-shadow:0 5px 14px rgba(45,90,39,.28)}
+.btn-blue{background:var(--b1);color:#f7f0e3}.btn-blue:hover:not(:disabled){background:#134870;transform:translateY(-1px)}
+.btn:disabled{opacity:.38;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+/* LOADER */
+.lcard{display:none}.lcard.show{display:block}
+.lwrap{text-align:center;padding:22px 0}
+.spin{width:38px;height:38px;border:3px solid rgba(181,132,58,.18);border-top-color:var(--g1);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lt{font-family:"Fraunces",serif;font-size:.9rem;font-weight:300;font-style:italic;color:rgba(26,18,9,.4)}
+.ls{font-size:.72rem;color:rgba(26,18,9,.27);margin-top:3px}
+/* RESULT SHARED */
+.rcard{display:none}.rcard.show{display:block}
+.rstrip{margin:-18px -18px 14px;border-radius:var(--rad) var(--rad) 0 0;padding:11px 16px;display:flex;align-items:center;gap:8px}
+.rstrip.healthy{background:var(--grnbg);border-bottom:1px solid rgba(74,140,63,.17)}
+.rstrip.warning{background:var(--gbg);border-bottom:1px solid rgba(181,132,58,.19)}
+.rstrip.danger{background:var(--rlt);border-bottom:1px solid rgba(192,57,43,.19)}
+.rstrip.earth{background:var(--ebg);border-bottom:1px solid rgba(107,66,38,.15)}
+.rico{font-size:1.25rem}.rst{font-weight:500;font-size:.82rem}
+.rgv{margin-left:auto;font-size:.71rem;opacity:.48;font-family:"Fraunces",serif;font-style:italic}
+.racil{margin-left:4px;background:var(--r2);color:#fff;font-size:.63rem;padding:2px 6px;border-radius:99px}
+.rtitle{font-family:"Fraunces",serif;font-size:1.28rem;font-weight:700;margin-bottom:5px;line-height:1.2}
+.rsub{font-size:.76rem;color:rgba(26,18,9,.4);margin-bottom:11px;display:flex;gap:10px;flex-wrap:wrap}
+.rdesc{font-size:.86rem;line-height:1.74;color:rgba(26,18,9,.68);margin-bottom:16px}
+.sevrow{display:flex;align-items:center;gap:9px;margin-bottom:13px}
+.sevlbl{font-size:.71rem;color:rgba(26,18,9,.38);min-width:75px}
+.sevtr{flex:1;height:4px;background:rgba(26,18,9,.06);border-radius:99px;overflow:hidden}
+.sevf{height:100%;border-radius:99px;transition:width 1.1s cubic-bezier(.22,1,.36,1);width:0%}
+.sevf.low{background:linear-gradient(90deg,var(--grn),var(--grn2))}.sevf.med{background:linear-gradient(90deg,var(--g1),var(--g2))}.sevf.high{background:linear-gradient(90deg,#b54a10,var(--r2))}
+.sevv{font-size:.75rem;font-family:"Fraunces",serif;min-width:36px;text-align:right}
+/* TABS INSIDE */
+.ttabs{display:flex;border:1px solid var(--brd);border-radius:8px;overflow:hidden;margin-bottom:10px}
+.ttab{flex:1;padding:7px 4px;text-align:center;font-size:.68rem;font-weight:500;cursor:pointer;border:none;background:transparent;color:rgba(26,18,9,.38);transition:all .13s;font-family:"DM Sans",sans-serif;border-right:1px solid var(--brd)}
+.ttab:last-child{border-right:none}.ttab.active{background:var(--r1);color:#fff}.ttab:hover:not(.active){background:var(--warm);color:var(--ink)}
+.tpanel{display:none}.tpanel.active{display:block}
+.tbox{background:var(--warm);border:1px solid var(--brd);border-radius:8px;padding:12px;font-size:.84rem;line-height:1.72;color:rgba(26,18,9,.68);white-space:pre-wrap}
+/* FORM */
+.sfgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:480px){.sfgrid{grid-template-columns:1fr}}
+.sfg label{display:block;font-size:.68rem;font-weight:500;color:rgba(26,18,9,.43);margin-bottom:3px;letter-spacing:.05em;text-transform:uppercase}
+.sfg select,.sfg input[type=text],.sfg input[type=number]{width:100%;padding:7px 10px;border:1.5px solid var(--brd);border-radius:8px;font-family:"DM Sans",sans-serif;font-size:.84rem;background:#fff;color:var(--ink);outline:none;transition:border-color .14s}
+.sfg select:focus,.sfg input:focus{border-color:var(--e1)}.sf-full{grid-column:1/-1}
+/* LOC */
+.locbox{background:var(--bbg);border:1px solid rgba(26,92,139,.16);border-radius:9px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.lico{font-size:1.35rem;flex-shrink:0}.linf{flex:1}
+.ltit{font-weight:500;font-size:.83rem;margin-bottom:1px}.lcrd{font-size:.73rem;color:rgba(26,18,9,.4);font-family:"Fraunces",serif;font-style:italic}
+.lbtn{padding:7px 12px;background:var(--b1);color:#fff;border:none;border-radius:7px;font-size:.76rem;cursor:pointer;font-family:"DM Sans",sans-serif;font-weight:500;transition:all .14s;white-space:nowrap;flex-shrink:0}
+.lbtn:hover{background:#134870}.lbtn:disabled{opacity:.43;cursor:not-allowed}
+/* SCORE RING */
+.scorering{display:flex;align-items:center;gap:15px;margin-bottom:15px}
+.rw{position:relative;width:78px;height:78px;flex-shrink:0}
+.rsvg{transform:rotate(-90deg)}
+.rbg{fill:none;stroke:rgba(26,18,9,.06);stroke-width:7}
+.rfg{fill:none;stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.22,1,.36,1)}
+.rscore{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.rnum{font-family:"Fraunces",serif;font-size:1.3rem;font-weight:700;line-height:1}
+.rlbl{font-size:.55rem;text-transform:uppercase;letter-spacing:.1em;opacity:.38;margin-top:1px}
+.ssum{flex:1}.sbolge{font-family:"Fraunces",serif;font-size:1.08rem;font-weight:700;line-height:1.2;margin-bottom:2px}
+.siklim{font-size:.74rem;color:rgba(26,18,9,.4);margin-bottom:5px}
+.sparams{display:flex;flex-wrap:wrap;gap:5px}
+.spb{padding:2px 7px;border-radius:99px;font-size:.68rem;font-weight:500;border:1px solid}
+.spgood{background:var(--grnbg);color:var(--grn);border-color:rgba(45,90,39,.17)}
+.spwarn{background:var(--gbg);color:#7a4f00;border-color:rgba(181,132,58,.19)}
+.spbad{background:var(--rlt);color:var(--r1);border-color:rgba(139,26,26,.16)}
+/* NUTS / STEPS / TAKVIM */
+.nutgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:8px;margin-bottom:15px}
+.nutcard{background:var(--warm);border:1px solid var(--brd);border-radius:9px;padding:10px}
+.nutname{font-weight:500;font-size:.81rem;margin-bottom:2px;color:var(--e1)}
+.nutbel{font-size:.71rem;color:rgba(26,18,9,.38);margin-bottom:4px;font-style:italic}
+.nutrec{font-size:.78rem;line-height:1.54;color:rgba(26,18,9,.65)}
+.steplist{display:flex;flex-direction:column;gap:8px}
+.stepitem{background:var(--warm);border:1px solid var(--brd);border-radius:9px;padding:11px;display:flex;gap:9px}
+.stepbadge{flex-shrink:0;padding:2px 8px;border-radius:99px;font-size:.64rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;align-self:flex-start;margin-top:1px}
+.stepbadge.acil{background:var(--rlt);color:var(--r1)}.stepbadge.orta-vadeli{background:var(--gbg);color:#7a4f00}.stepbadge.uzun-vadeli{background:var(--grnbg);color:var(--grn)}
+.skat{font-size:.67rem;font-weight:500;color:rgba(26,18,9,.33);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+.suyg{font-size:.83rem;line-height:1.58;color:rgba(26,18,9,.7)}.sdet{font-size:.73rem;color:rgba(26,18,9,.38);margin-top:2px}
+.takgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.takitem{background:var(--warm);border:1px solid var(--brd);border-radius:8px;padding:10px}
+.takmo{font-weight:500;font-size:.77rem;margin-bottom:3px;display:flex;align-items:center;gap:4px}
+.taktxt{font-size:.77rem;line-height:1.58;color:rgba(26,18,9,.6)}
+/* PDF */
+.pdf-dz{border:2px dashed rgba(107,66,38,.19);border-radius:9px;padding:28px 16px;text-align:center;cursor:pointer;position:relative;transition:all .16s;background:var(--ebg)}
+.pdf-dz:hover,.pdf-dz.over{border-color:var(--e1)}.pdf-dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.pdf-prev{display:none;margin-top:11px;background:var(--ebg);border:1px solid rgba(107,66,38,.17);border-radius:8px;padding:12px 14px;align-items:center;gap:10px}
+.pdf-prev.show{display:flex}.pdf-fname{font-weight:500;font-size:.85rem;flex:1;word-break:break-all}
+.pdf-fsize{font-size:.71rem;color:rgba(26,18,9,.36)}.pdf-rm{padding:4px 8px;border:1px solid rgba(192,57,43,.28);border-radius:5px;background:transparent;color:var(--r2);font-size:.71rem;cursor:pointer;flex-shrink:0}
+.pdf-ozet{background:rgba(107,66,38,.06);border:1px solid rgba(107,66,38,.13);border-radius:7px;padding:10px 12px;font-size:.81rem;line-height:1.63;color:rgba(26,18,9,.66);display:none;margin-bottom:12px}
+.pdf-ozet.show{display:block}.pdf-ozet strong{color:var(--e1);display:block;margin-bottom:3px;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}
+/* HAVA DURUMU */
+.hava-anlik{background:linear-gradient(135deg,#1a4a8b,#2d7dd2);color:#fff;border-radius:11px;padding:18px;margin-bottom:13px;display:flex;align-items:center;gap:16px}
+.hava-ico{font-size:2.8rem;line-height:1}
+.hava-temp{font-family:"Fraunces",serif;font-size:2.2rem;font-weight:700;line-height:1}
+.hava-durum{font-size:.85rem;opacity:.8;margin-top:2px}
+.hava-detay{margin-top:10px;display:flex;gap:11px;flex-wrap:wrap}
+.hava-extra-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:13px}
+.hava-extra-kart{background:#fff;border:1px solid var(--brd);border-radius:9px;padding:10px;text-align:center;box-shadow:var(--shd)}
+.hex-val{font-family:"Fraunces",serif;font-size:1.2rem;font-weight:700;color:var(--b1);line-height:1}
+.hex-lbl{font-size:.68rem;color:rgba(26,18,9,.4);margin-top:2px}
+.ilaclama-tablo{width:100%;border-collapse:collapse;font-size:.79rem;margin-top:8px}
+.ilaclama-tablo th{padding:6px 8px;background:rgba(255,255,255,.15);font-size:.68rem;font-weight:600;text-align:left;opacity:.8}
+.ilaclama-tablo td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.1)}
+.ilaclama-tablo tr:last-child td{border-bottom:none}
+.il-uygun{color:#6ee46e;font-weight:600}.il-yasak{color:#ff7675;font-weight:600}
+.hd-item{font-size:.77rem;opacity:.75;display:flex;align-items:center;gap:5px}
+.tahmin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:7px;margin-bottom:13px;max-height:none}
+.tahmin-kart{background:#fff;border:1px solid var(--brd);border-radius:9px;padding:10px 8px;text-align:center;box-shadow:var(--shd)}
+.tk-gun{font-size:.7rem;font-weight:600;color:rgba(26,18,9,.45);margin-bottom:4px;text-transform:uppercase}
+.tk-ico{font-size:1.5rem;margin-bottom:3px;line-height:1}
+.tk-max{font-family:"Fraunces",serif;font-size:.95rem;font-weight:700}.tk-min{font-size:.73rem;color:rgba(26,18,9,.42)}
+.tk-yagis{font-size:.68rem;color:var(--b1);margin-top:2px}
+.uyari-listesi{display:flex;flex-direction:column;gap:7px}
+.uyari-item{background:var(--gbg);border:1px solid rgba(181,132,58,.22);border-radius:8px;padding:9px 12px;font-size:.82rem;color:#7a4f00;display:flex;gap:7px;align-items:flex-start}
+/* TAKVİM */
+.takvim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.ay-kart{background:#fff;border:1px solid var(--brd);border-radius:10px;overflow:hidden;box-shadow:var(--shd)}
+.ay-head{padding:9px 12px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between}
+.ay-isim{font-family:"Fraunces",serif;font-size:.92rem;font-weight:700}
+.ay-body{padding:10px 12px}
+.takvim-is{display:flex;gap:6px;align-items:flex-start;margin-bottom:7px;font-size:.78rem;line-height:1.5}
+.takvim-is:last-child{margin-bottom:0}
+.is-badge{font-size:.62rem;padding:1px 6px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0;margin-top:1px}
+.is-badge.budama{background:#e8f0fe;color:#1a3a6b}.is-badge.sulama{background:var(--bbg);color:var(--b1)}
+.is-badge.ilaclama{background:var(--rlt);color:var(--r1)}.is-badge.gubleme{background:var(--grnbg);color:var(--grn)}
+.is-badge.hasat{background:var(--gbg);color:#7a4f00}.is-badge.diger{background:var(--ebg);color:var(--e1)}
+/* HARİTA */
+#bahce-harita{width:100%;height:380px;border-radius:10px;border:1px solid var(--brd);margin-bottom:13px;z-index:1}
+.harita-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.harita-btn{padding:7px 13px;border:1.5px solid var(--brd);border-radius:8px;background:#fff;font-family:"DM Sans",sans-serif;font-size:.78rem;cursor:pointer;font-weight:500;transition:all .14s;display:flex;align-items:center;gap:5px}
+.harita-btn:hover{border-color:var(--r1);color:var(--r1)}.harita-btn.active{background:var(--r1);color:#fff;border-color:var(--r1)}
+.agac-listesi{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:9px;margin-top:12px}
+.agac-kart{background:#fff;border:1px solid var(--brd);border-radius:9px;padding:12px;display:flex;gap:9px;align-items:flex-start;box-shadow:var(--shd)}
+.agac-ico{font-size:1.5rem;flex-shrink:0;margin-top:1px}
+.agac-info{flex:1}.agac-adi{font-weight:500;font-size:.86rem;margin-bottom:2px}
+.agac-detay{font-size:.73rem;color:rgba(26,18,9,.42);line-height:1.5}
+.agac-sil{padding:3px 8px;border:1px solid rgba(192,57,43,.25);border-radius:5px;background:transparent;color:var(--r2);font-size:.68rem;cursor:pointer;margin-top:5px}
+/* VERİM */
+.verim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.verim-kart{background:#fff;border:1px solid var(--brd);border-radius:10px;padding:14px;box-shadow:var(--shd)}
+.verim-meyve{font-family:"Fraunces",serif;font-size:1rem;font-weight:700;margin-bottom:5px}
+.verim-yil{font-size:.73rem;color:rgba(26,18,9,.38);margin-bottom:8px}
+.verim-bar-wrap{display:flex;align-items:center;gap:8px}
+.verim-bar-bg{flex:1;height:6px;background:rgba(26,18,9,.07);border-radius:99px;overflow:hidden}
+.verim-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--grn),var(--grn2));transition:width 1s ease}
+.verim-kg{font-size:.8rem;font-weight:600;color:var(--grn);min-width:50px;text-align:right}
+.verim-hedef{font-size:.71rem;color:rgba(26,18,9,.38);margin-top:3px}
+.verim-sil{float:right;padding:2px 7px;border:1px solid var(--brd);border-radius:5px;background:transparent;font-size:.67rem;cursor:pointer;color:rgba(26,18,9,.4)}
+.verim-sil:hover{border-color:var(--r2);color:var(--r2)}
+/* ARŞİV */
+.arsiv-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.arsiv-toolbar select{padding:6px 9px;border:1.5px solid var(--brd);border-radius:7px;font-family:"DM Sans",sans-serif;font-size:.8rem;background:#fff;color:var(--ink);outline:none;cursor:pointer}
+.arsiv-count{font-size:.75rem;color:rgba(26,18,9,.34);margin-left:auto}
+.compare-panel{background:var(--ebg);border:1.5px solid rgba(107,66,38,.17);border-radius:9px;padding:13px;margin-bottom:12px;display:none}
+.compare-panel.show{display:block}
+.cp-title{font-family:"Fraunces",serif;font-size:.9rem;font-weight:600;margin-bottom:10px;color:var(--e1)}
+.cp-table{width:100%;border-collapse:collapse;font-size:.79rem}
+.cp-table th{text-align:left;padding:5px 8px;background:rgba(107,66,38,.08);color:rgba(26,18,9,.46);font-size:.67rem;font-weight:500;text-transform:uppercase;letter-spacing:.07em}
+.cp-table td{padding:6px 8px;border-bottom:1px solid rgba(107,66,38,.08)}
+.cp-table tr:last-child td{border-bottom:none}
+.row-label{font-weight:500;color:rgba(26,18,9,.5);font-size:.75rem;white-space:nowrap}
+.cp-better{color:var(--grn);font-weight:600}.cp-worse{color:var(--r2);font-weight:600}
+.compare-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.ars-card{background:#fff;border:1.5px solid var(--brd);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .16s;box-shadow:var(--shd)}
+.ars-card:hover{border-color:var(--e1);transform:translateY(-1px)}.ars-card.selected{border-color:var(--e1);background:var(--ebg)}
+.ars-head{padding:10px 12px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between}
+.ars-mevsim{display:flex;align-items:center;gap:5px;font-size:.75rem;font-weight:500}
+.ars-yil{font-size:.7rem;color:rgba(26,18,9,.35);font-family:"Fraunces",serif;font-style:italic}
+.ars-body{padding:10px 12px}.ars-bahce{font-family:"Fraunces",serif;font-size:.95rem;font-weight:600;margin-bottom:3px;line-height:1.2}
+.ars-bolge{font-size:.73rem;color:rgba(26,18,9,.38);margin-bottom:7px}
+.ars-score-row{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.ars-score-num{font-family:"Fraunces",serif;font-size:1.35rem;font-weight:700;line-height:1}
+.ars-score-bar{flex:1;height:4px;background:rgba(26,18,9,.06);border-radius:99px;overflow:hidden}
+.ars-meta{font-size:.7rem;color:rgba(26,18,9,.34);display:flex;gap:8px;flex-wrap:wrap}
+.ars-actions{display:flex;gap:5px;margin-top:8px}
+.ars-btn{flex:1;padding:5px;border-radius:6px;border:1px solid var(--brd);background:transparent;font-size:.69rem;cursor:pointer;font-family:"DM Sans",sans-serif;font-weight:500;transition:all .12s;color:rgba(26,18,9,.45)}
+.ars-btn:hover{border-color:var(--e1);color:var(--e1);background:var(--ebg)}.ars-btn.del:hover{border-color:var(--r2);color:var(--r2);background:var(--rlt)}
+/* YABANİ OT */
+.weed-strip{background:linear-gradient(135deg,var(--grn),var(--grn2));color:#fff;margin:-18px -18px 14px;border-radius:var(--rad) var(--rad) 0 0;padding:11px 16px;display:flex;align-items:center;gap:8px}
+.weed-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:8px;margin-bottom:15px}
+.weed-card{background:var(--warm);border:1px solid var(--brd);border-radius:9px;padding:11px}
+.weed-name{font-weight:600;font-size:.84rem;color:var(--grn);margin-bottom:2px}.weed-latin{font-size:.7rem;color:rgba(26,18,9,.34);font-style:italic;margin-bottom:4px}
+.weed-zarar{font-size:.78rem;color:rgba(26,18,9,.62);line-height:1.53;margin-bottom:4px}
+.weed-tehlike{display:inline-block;padding:2px 7px;border-radius:99px;font-size:.65rem;font-weight:600}
+.weed-tehlike.dusuk{background:var(--grnbg);color:var(--grn)}.weed-tehlike.orta{background:var(--gbg);color:#7a4f00}.weed-tehlike.yuksek{background:var(--rlt);color:var(--r1)}
+.mucadele-tabs{display:flex;border:1px solid var(--brd);border-radius:7px;overflow:hidden;margin-bottom:10px}
+.mucadele-tab{flex:1;padding:7px 3px;text-align:center;font-size:.68rem;font-weight:500;cursor:pointer;border:none;background:transparent;color:rgba(26,18,9,.38);transition:all .12s;font-family:"DM Sans",sans-serif;border-right:1px solid var(--brd)}
+.mucadele-tab:last-child{border-right:none}.mucadele-tab.active{background:var(--grn);color:#fff}
+.mucadele-panel{display:none}.mucadele-panel.active{display:block}
+.mucadele-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.mucadele-list li{background:var(--warm);border:1px solid var(--brd);border-radius:7px;padding:9px 11px;font-size:.82rem;line-height:1.63;color:rgba(26,18,9,.68);display:flex;gap:8px;align-items:flex-start}
+.mucadele-list li::before{content:"✦";color:var(--grn2);flex-shrink:0;margin-top:2px;font-size:.66rem}
+.kim-card{background:var(--warm);border:1px solid var(--brd);border-radius:8px;padding:10px;margin-bottom:6px}
+.kim-etken{font-weight:600;font-size:.81rem;color:var(--r1);margin-bottom:2px}
+.kim-uyg{font-size:.79rem;color:rgba(26,18,9,.66);margin-bottom:2px;line-height:1.53}
+.kim-dikkat{font-size:.75rem;color:#b54a10;background:#fde8d8;border-radius:5px;padding:3px 7px}
+/* HISTORY */
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:7px}
+.hthumb{border-radius:7px;overflow:hidden;border:1.5px solid var(--brd);aspect-ratio:1;position:relative;background:var(--warm);transition:border-color .12s}
+.hthumb:hover{border-color:var(--r1)}.hthumb img{width:100%;height:100%;object-fit:cover}
+.hbadge{position:absolute;bottom:3px;left:3px;right:3px;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);font-size:.55rem;color:#fff;padding:2px 4px;border-radius:4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hempty{font-style:italic;font-size:.82rem;color:rgba(26,18,9,.24);text-align:center;padding:10px 0}
+/* TIPS */
+.tips{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+@media(max-width:440px){.tips{grid-template-columns:1fr}}
+.tip{background:var(--warm);border:1px solid var(--brd);border-radius:7px;padding:10px;display:flex;gap:7px}
+.tico{font-size:1rem;flex-shrink:0}.tb strong{display:block;font-size:.72rem;font-weight:500;margin-bottom:1px}
+.tb span{font-size:.74rem;color:rgba(26,18,9,.48);line-height:1.5}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,18,9,.52);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:20px 13px;overflow-y:auto;backdrop-filter:blur(3px)}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:13px;max-width:560px;width:100%;box-shadow:0 20px 60px rgba(26,18,9,.22);animation:fadeUp .26s ease both}
+.modal-head{padding:14px 17px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-family:"Fraunces",serif;font-size:1.08rem;font-weight:700}
+.modal-close{width:26px;height:26px;border-radius:50%;border:1px solid var(--brd);background:transparent;cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.modal-close:hover{background:var(--rlt);color:var(--r2)}
+.modal-body{padding:17px;max-height:75vh;overflow-y:auto}
+/* RAPOR */
+.rapor-ozet{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.rapor-stat{background:#fff;border:1px solid var(--brd);border-radius:10px;padding:14px;text-align:center;box-shadow:var(--shd)}
+.rs-sayi{font-family:"Fraunces",serif;font-size:1.8rem;font-weight:700;color:var(--r1);line-height:1}
+.rs-lbl{font-size:.72rem;color:rgba(26,18,9,.4);margin-top:3px}
+/* KARŞILAŞTIRMA */
+.karsi-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:13px}
+@media(max-width:480px){.karsi-grid{grid-template-columns:1fr}}
+.karsi-slot{border:2px dashed var(--brd);border-radius:9px;padding:16px;text-align:center;cursor:pointer;position:relative;transition:all .15s;background:var(--warm)}
+.karsi-slot:hover{border-color:var(--r1)}.karsi-slot.has-img{border-style:solid;border-color:var(--grn)}
+.karsi-slot input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.karsi-slot img{width:100%;height:130px;object-fit:cover;border-radius:6px;display:none}
+.karsi-slot img.show{display:block}
+.karsi-label{font-size:.75rem;color:rgba(26,18,9,.4);margin-top:6px}
+.karsi-sonuc{background:#fff;border:1px solid var(--brd);border-radius:10px;padding:16px;margin-top:12px;display:none}
+.karsi-sonuc.show{display:block}
+.karsi-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;font-size:.82rem;font-weight:600;margin-bottom:12px;border:1.5px solid}
+.karsi-badge.iyilesti{background:var(--grnbg);color:var(--grn);border-color:rgba(45,90,39,.2)}
+.karsi-badge.kotu_gitti{background:var(--rlt);color:var(--r1);border-color:rgba(139,26,26,.2)}
+.karsi-badge.degismedi{background:var(--gbg);color:#7a4f00;border-color:rgba(181,132,58,.2)}
+
+/* LOC INPUT ROW */
+.loc-input-row{display:flex;gap:8px;margin-bottom:8px;margin-top:8px}
+.loc-ara-inp{flex:1;padding:8px 11px;border:1.5px solid var(--brd);border-radius:8px;font-family:"DM Sans",sans-serif;font-size:.85rem;background:#fff;color:var(--ink);outline:none;transition:border-color .14s}
+.loc-ara-inp:focus{border-color:var(--b1)}
+.loc-sonuc-liste{background:#fff;border:1.5px solid var(--b1);border-radius:8px;box-shadow:0 6px 20px rgba(26,18,9,.1);overflow:hidden;margin-bottom:8px}
+.loc-sonuc-item{padding:9px 13px;font-size:.84rem;cursor:pointer;border-bottom:1px solid var(--brd);transition:background .12s;display:flex;gap:8px;align-items:flex-start}
+.loc-sonuc-item:last-child{border-bottom:none}
+.loc-sonuc-item:hover{background:var(--bbg)}
+.loc-sonuc-item .lsi-ico{flex-shrink:0;font-size:.9rem;margin-top:1px}
+.loc-sonuc-item .lsi-txt{flex:1;line-height:1.4}
+.loc-sonuc-item .lsi-krd{font-size:.7rem;color:rgba(26,18,9,.35);margin-top:1px}
+/* HAVA YORUM */
+.hava-yorum-kart{background:linear-gradient(135deg,#0f3460,#1a5c8b);color:#fff;border-radius:11px;padding:16px 18px;margin-bottom:13px}
+.hava-yorum-baslik{font-family:"Fraunces",serif;font-size:1rem;font-weight:700;margin-bottom:10px;opacity:.9}
+.hava-yorum-txt{font-size:.86rem;line-height:1.7;opacity:.85;margin-bottom:12px}
+.ilaclama-grid{display:flex;gap:7px;flex-wrap:wrap}
+.ilaclama-chip{padding:5px 11px;border-radius:99px;font-size:.76rem;font-weight:600;border:1.5px solid rgba(255,255,255,.3)}
+.ilaclama-chip.uygun{background:rgba(46,213,115,.2);border-color:rgba(46,213,115,.5)}
+.ilaclama-chip.uygun-satis{background:rgba(255,165,0,.2);border-color:rgba(255,165,0,.5)}
+.ilaclama-chip.yasak{background:rgba(255,71,87,.2);border-color:rgba(255,71,87,.5)}
+/* UYDU KATMANI */
+.katman-btn{padding:5px 11px;border:1.5px solid var(--brd);border-radius:7px;background:#fff;font-size:.75rem;cursor:pointer;font-family:"DM Sans",sans-serif;font-weight:500;transition:all .13s}
+.katman-btn:hover{border-color:var(--r1)}.katman-btn.active{background:var(--r1);color:#fff;border-color:var(--r1)}
+/* RAPOR YAZDIR */
+@media print{header,.nav,button,.btn,.harita-toolbar,.loc-input-row,.loc-sonuc-liste,footer{display:none!important}.tab-panel{display:block!important}.card{break-inside:avoid}}
+
+
+/* ═══ YAPAN BADGE ═══ */
+.yapan-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px 3px 5px;border-radius:99px;font-size:.72rem;font-weight:500;border:1px solid rgba(26,18,9,.1);background:var(--warm);color:rgba(26,18,9,.6)}
+.yapan-avatar{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#fff;flex-shrink:0}
+/* ═══ AKTİVİTE LOGU ═══ */
+.akt-item{display:flex;gap:10px;align-items:flex-start;padding:10px 13px;border-bottom:1px solid var(--brd);transition:background .1s}
+.akt-item:hover{background:var(--warm)}.akt-item:last-child{border-bottom:none}
+.akt-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px}
+.akt-icerik{flex:1}.akt-islem{font-size:.83rem;font-weight:500;margin-bottom:1px}
+.akt-detay{font-size:.75rem;color:rgba(26,18,9,.45);margin-bottom:2px}
+.akt-tarih{font-size:.68rem;color:rgba(26,18,9,.3);font-style:italic}
+.akt-badge{display:inline-flex;padding:2px 7px;border-radius:99px;font-size:.63rem;font-weight:600;margin-left:5px}
+.akt-badge.teshis{background:var(--rlt);color:var(--r1)}.akt-badge.toprak{background:var(--ebg);color:var(--e1)}
+.akt-badge.giris{background:var(--grnbg);color:var(--grn)}.akt-badge.diger{background:var(--bbg);color:var(--b1)}
+/* ═══ KULLANICI YÖNETİMİ ═══ */
+.kul-kart{background:#fff;border:1px solid var(--brd);border-radius:10px;padding:14px;display:flex;gap:12px;align-items:center;box-shadow:var(--shd)}
+.kul-bilgi{flex:1}.kul-ad{font-weight:600;font-size:.9rem;margin-bottom:2px}
+.kul-meta{font-size:.74rem;color:rgba(26,18,9,.42)}
+.kul-rol-badge{display:inline-flex;padding:2px 8px;border-radius:99px;font-size:.68rem;font-weight:600}
+.kul-rol-badge.admin{background:var(--rlt);color:var(--r1)}.kul-rol-badge.uye{background:var(--grnbg);color:var(--grn)}.kul-rol-badge.izleyici{background:var(--bbg);color:var(--b1)}
+.davet-kodu-kutu{background:linear-gradient(135deg,var(--r1),#c0392b);color:#fff;border-radius:11px;padding:18px;text-align:center;margin-bottom:14px}
+.dk-baslik{font-size:.75rem;opacity:.75;margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em}
+.dk-kod{font-family:"Fraunces",serif;font-size:2rem;font-weight:700;letter-spacing:.15em;margin-bottom:8px}
+.dk-kopyala{padding:6px 16px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:7px;color:#fff;font-size:.78rem;cursor:pointer;font-family:"DM Sans",sans-serif}
+
+/* PWA INSTALL BANNER */
+#pwa-banner{position:fixed;bottom:0;left:0;right:0;background:var(--r1);color:#f7f0e3;padding:12px 16px;display:flex;align-items:center;gap:12px;z-index:8000;box-shadow:0 -3px 16px rgba(0,0,0,.2);transform:translateY(100%);transition:transform .3s ease}
+#pwa-banner.show{transform:translateY(0)}
+#pwa-banner .pwa-ico{font-size:1.4rem;flex-shrink:0}
+#pwa-banner .pwa-txt{flex:1;font-size:.83rem;line-height:1.4}
+#pwa-banner .pwa-txt strong{display:block;font-size:.88rem;margin-bottom:1px}
+#pwa-banner .pwa-kur{padding:7px 14px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);border-radius:7px;color:#fff;font-size:.78rem;cursor:pointer;font-family:"DM Sans",sans-serif;font-weight:600;flex-shrink:0}
+#pwa-banner .pwa-kapat{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.12);border:none;color:#fff;cursor:pointer;font-size:.75rem;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+/* MOBİL BOTTOM NAV (600px altı) */
+@media(max-width:600px){
+  .nav-in{display:none}
+  #mob-nav{display:flex!important}
+  main{padding:10px 10px 80px}
+  .card{padding:14px;margin-bottom:10px}
+  .sfgrid{grid-template-columns:1fr}
+  .takgrid{grid-template-columns:1fr}
+  .tahmin-grid{grid-template-columns:repeat(4,1fr)}
+  .karsi-grid{grid-template-columns:1fr}
+  .nutgrid{grid-template-columns:1fr}
+  .rapor-ozet{grid-template-columns:1fr 1fr}
+  .tips{grid-template-columns:1fr}
+  .compare-grid{grid-template-columns:1fr}
+  .agac-listesi{grid-template-columns:1fr}
+  .verim-grid{grid-template-columns:1fr}
+  .takvim-grid{grid-template-columns:1fr 1fr}
+  .hava-anlik{flex-direction:column;gap:10px}
+  #bahce-harita{height:300px}
+  .modal{margin:10px;max-width:calc(100vw - 20px)}
+  .modal-body{max-height:70vh}
+  .meyve-menu{max-height:300px}
+}
+/* MOBİL BOTTOM NAV */
+#mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--brd);z-index:500;padding:6px 4px 8px;box-shadow:0 -2px 12px rgba(26,18,9,.08)}
+.mob-nav-in{display:flex;justify-content:space-around;align-items:center;max-width:500px;margin:0 auto}
+.mob-tab{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;border:none;background:transparent;cursor:pointer;border-radius:8px;transition:all .15s;min-width:48px}
+.mob-tab .mt-ico{font-size:1.2rem;line-height:1}
+.mob-tab .mt-lbl{font-size:.58rem;color:rgba(26,18,9,.45);font-family:"DM Sans",sans-serif;font-weight:500}
+.mob-tab.active{background:var(--rlt)}
+.mob-tab.active .mt-ico{filter:drop-shadow(0 0 3px rgba(139,26,26,.4))}
+.mob-tab.active .mt-lbl{color:var(--r1);font-weight:700}
+/* SUPABASE SYNC LOG */
+.sb-log-satir{display:flex;gap:6px;align-items:flex-start;margin-bottom:2px}
+.sb-log-zaman{opacity:.5;flex-shrink:0}
+.sb-ok{color:#a8ff78}.sb-err{color:#ff7675}.sb-info{color:#74b9ff}
+
+footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13px 22px;font-style:italic;border-top:1px solid var(--brd)}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:rgba(139,26,26,.18);border-radius:99px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media print{.nav,.nav-in,.ntab,button,.btn,.harita-toolbar,footer{display:none!important}.tab-panel{display:block!important}body{font-size:12px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hi">
+    <div class="logo">🌿</div>
+    <div class="htxt"><h1>Bahçe Danışmanı</h1><p>Yapay Zeka Destekli Meyve Bahçesi Yönetim Sistemi v3.0</p></div>
+    <div class="hpill"><div class="dot"></div> Sunucu Aktif</div>
+    </div>
+  </div>
+</header>
+
+<div class="nav">
+  <div class="nav-in">
+    <button class="ntab active" data-tab="hastalik">🔬 Teşhis</button>
+    <button class="ntab" data-tab="toprak">🌱 Toprak</button>
+    <button class="ntab" data-tab="yabani-ot">🌾 Ot</button>
+    <button class="ntab" data-tab="hava">🌤️ Hava</button>
+    <button class="ntab" data-tab="takvim">📅 Takvim</button>
+    <button class="ntab" data-tab="harita">🗺️ Harita</button>
+    <button class="ntab" data-tab="arsiv">📂 Arşiv</button>
+    <button class="ntab" data-tab="rapor">📑 Rapor</button>
+    <button class="ntab" data-tab="supabase">☁️ Sync</button>
+  </div>
+</div>
+
+<main>
+
+<!-- ══ HASTALIK ══ -->
+<div class="tab-panel active" id="tab-hastalik">
+  <div class="card">
+    <div class="slabel">🌳 Meyve Türü & Çeşidi</div>
+    <div class="meyve-dropdown">
+      <button type="button" class="meyve-trigger" id="meyve-trigger">
+        <span class="sel-ico" id="sel-ico">🍑</span>
+        <span class="sel-txt" id="sel-txt">Şeftali</span>
+        <span class="sel-cesit" id="sel-cesit">— Standart</span>
+        <span class="arr">▼</span>
+      </button>
+      <div class="meyve-menu" id="meyve-menu">
+        <div class="meyve-grup-hd">🍑 ŞEFTALİ</div>
+        <div class="meyve-item active" data-m="seftali" data-ico="🍑" data-grup="Şeftali" data-cesit="Standart"><span class="mi-ico">🍑</span><span class="mi-txt">Standart</span></div>
+        <div class="meyve-item" data-m="seftali_zodiac" data-ico="🍑" data-grup="Şeftali" data-cesit="Zodiac"><span class="mi-ico">🍑</span><span class="mi-txt">Zodiac</span><span class="mi-tag">Yassı</span></div>
+        <div class="meyve-item" data-m="seftali_osiris" data-ico="🍑" data-grup="Şeftali" data-cesit="Osiris"><span class="mi-ico">🍑</span><span class="mi-txt">Osiris</span><span class="mi-tag">Yassı</span></div>
+        <div class="meyve-grup-hd">🍊 NEKTARİN</div>
+        <div class="meyve-item" data-m="nektarin_gartario" data-ico="🍊" data-grup="Nektarin" data-cesit="Gartario"><span class="mi-ico">🍊</span><span class="mi-txt">Gartario</span></div>
+        <div class="meyve-item" data-m="nektarin_boreal" data-ico="🍊" data-grup="Nektarin" data-cesit="Boreal"><span class="mi-ico">🍊</span><span class="mi-txt">Boreal</span></div>
+        <div class="meyve-item" data-m="yassi_nektarin_luisella" data-ico="🍊" data-grup="Nektarin" data-cesit="Luisella"><span class="mi-ico">🍊</span><span class="mi-txt">Luisella</span><span class="mi-tag">Yassı</span></div>
+        <div class="meyve-grup-hd">🟠 KAYISI</div>
+        <div class="meyve-item" data-m="kayisi_orange_ruby" data-ico="🟠" data-grup="Kayısı" data-cesit="Orange Ruby"><span class="mi-ico">🟠</span><span class="mi-txt">Orange Ruby</span></div>
+        <div class="meyve-grup-hd">🍊 MANDALİNA</div>
+        <div class="meyve-item" data-m="mandalina_wmurcot" data-ico="🍊" data-grup="Mandalina" data-cesit="W-Murcot"><span class="mi-ico">🍊</span><span class="mi-txt">W-Murcot</span></div>
+        <div class="meyve-grup-hd">🌿 NAR</div>
+        <div class="meyve-item" data-m="nar_hicaz" data-ico="🌿" data-grup="Nar" data-cesit="Hicaz"><span class="mi-ico">🌿</span><span class="mi-txt">Hicaz Nar</span></div>
+        <div class="meyve-item" data-m="nar_early_wonderful" data-ico="🌿" data-grup="Nar" data-cesit="Early Wonderful"><span class="mi-ico">🌿</span><span class="mi-txt">Early Wonderful</span><span class="mi-tag">Erkenci</span></div>
+        <div class="meyve-grup-hd">🟤 HURMA</div>
+        <div class="meyve-item" data-m="hurma_rojo_brillante" data-ico="🟤" data-grup="Hurma" data-cesit="Rojo Brillante"><span class="mi-ico">🟤</span><span class="mi-txt">Rojo Brillante</span></div>
+        <div class="meyve-grup-hd">🟣 ERİK</div>
+        <div class="meyve-item" data-m="erik" data-ico="🟣" data-grup="Erik" data-cesit="Genel"><span class="mi-ico">🟣</span><span class="mi-txt">Genel</span></div>
+        <div class="meyve-item" data-m="erik_can" data-ico="🟣" data-grup="Erik" data-cesit="Can Eriği"><span class="mi-ico">🟣</span><span class="mi-txt">Can Eriği</span></div>
+        <div class="meyve-item" data-m="erik_japon" data-ico="🟣" data-grup="Erik" data-cesit="Japon Eriği"><span class="mi-ico">🟣</span><span class="mi-txt">Japon Eriği</span></div>
+        <div class="meyve-grup-hd">🍒 KİRAZ</div>
+        <div class="meyve-item" data-m="kiraz" data-ico="🍒" data-grup="Kiraz" data-cesit="Genel"><span class="mi-ico">🍒</span><span class="mi-txt">Genel</span></div>
+        <div class="meyve-item" data-m="kiraz_0900" data-ico="🍒" data-grup="Kiraz" data-cesit="0900 Ziraat"><span class="mi-ico">🍒</span><span class="mi-txt">0900 Ziraat</span></div>
+        <div class="meyve-item" data-m="kiraz_lambert" data-ico="🍒" data-grup="Kiraz" data-cesit="Lambert"><span class="mi-ico">🍒</span><span class="mi-txt">Lambert</span></div>
+        <div class="meyve-grup-hd">🍎 ELMA</div>
+        <div class="meyve-item" data-m="elma" data-ico="🍎" data-grup="Elma" data-cesit="Genel"><span class="mi-ico">🍎</span><span class="mi-txt">Genel</span></div>
+        <div class="meyve-item" data-m="elma_fuji" data-ico="🍎" data-grup="Elma" data-cesit="Fuji"><span class="mi-ico">🍎</span><span class="mi-txt">Fuji</span></div>
+        <div class="meyve-item" data-m="elma_golden" data-ico="🍎" data-grup="Elma" data-cesit="Golden"><span class="mi-ico">🍎</span><span class="mi-txt">Golden</span></div>
+        <div class="meyve-item" data-m="elma_granny" data-ico="🍎" data-grup="Elma" data-cesit="Granny Smith"><span class="mi-ico">🍎</span><span class="mi-txt">Granny Smith</span></div>
+        <div class="meyve-item" data-m="elma_starking" data-ico="🍎" data-grup="Elma" data-cesit="Starking"><span class="mi-ico">🍎</span><span class="mi-txt">Starking</span></div>
+        <div class="meyve-grup-hd">🍐 ARMUT</div>
+        <div class="meyve-item" data-m="armut" data-ico="🍐" data-grup="Armut" data-cesit="Genel"><span class="mi-ico">🍐</span><span class="mi-txt">Genel</span></div>
+        <div class="meyve-item" data-m="armut_deveci" data-ico="🍐" data-grup="Armut" data-cesit="Deveci"><span class="mi-ico">🍐</span><span class="mi-txt">Deveci</span></div>
+        <div class="meyve-item" data-m="armut_santa" data-ico="🍐" data-grup="Armut" data-cesit="Santa Maria"><span class="mi-ico">🍐</span><span class="mi-txt">Santa Maria</span></div>
+        <div class="meyve-grup-hd">🟡 AYVA</div>
+        <div class="meyve-item" data-m="ayva" data-ico="🟡" data-grup="Ayva" data-cesit="Genel"><span class="mi-ico">🟡</span><span class="mi-txt">Genel</span></div>
+        <div class="meyve-item" data-m="ayva_ekmek" data-ico="🟡" data-grup="Ayva" data-cesit="Ekmek Ayvası"><span class="mi-ico">🟡</span><span class="mi-txt">Ekmek Ayvası</span></div>
+        <div class="meyve-grup-hd">🍇 ÜZÜM</div>
+        <div class="meyve-item" data-m="uzum" data-ico="🍇" data-grup="Üzüm" data-cesit="Genel"><span class="mi-ico">🍇</span><span class="mi-txt">Genel</span></div>
+        <div class="meyve-item" data-m="uzum_sultani" data-ico="🍇" data-grup="Üzüm" data-cesit="Sultani"><span class="mi-ico">🍇</span><span class="mi-txt">Sultani</span></div>
+        <div class="meyve-item" data-m="uzum_hamburg" data-ico="🍇" data-grup="Üzüm" data-cesit="Hamburg"><span class="mi-ico">🍇</span><span class="mi-txt">Hamburg</span></div>
+        <div class="meyve-item" data-m="uzum_razaki" data-ico="🍇" data-grup="Üzüm" data-cesit="Razakı"><span class="mi-ico">🍇</span><span class="mi-txt">Razakı</span></div>
+        <div class="meyve-grup-hd">🫐 İNCİR</div>
+        <div class="meyve-item" data-m="incir" data-ico="🫐" data-grup="İncir" data-cesit="Genel"><span class="mi-ico">🫐</span><span class="mi-txt">Genel</span></div>
+        <div class="meyve-item" data-m="incir_sarilop" data-ico="🫐" data-grup="İncir" data-cesit="Sarılop"><span class="mi-ico">🫐</span><span class="mi-txt">Sarılop</span></div>
+        <div class="meyve-item" data-m="incir_bursa" data-ico="🫐" data-grup="İncir" data-cesit="Bursa Siyahı"><span class="mi-ico">🫐</span><span class="mi-txt">Bursa Siyahı</span></div>
+        <div class="meyve-grup-hd">🫒 ZEYTİN</div>
+        <div class="meyve-item" data-m="zeytin" data-ico="🫒" data-grup="Zeytin" data-cesit="Genel"><span class="mi-ico">🫒</span><span class="mi-txt">Genel</span></div>
+        <div class="meyve-item" data-m="zeytin_ayvalik" data-ico="🫒" data-grup="Zeytin" data-cesit="Ayvalık"><span class="mi-ico">🫒</span><span class="mi-txt">Ayvalık</span></div>
+        <div class="meyve-item" data-m="zeytin_memecik" data-ico="🫒" data-grup="Zeytin" data-cesit="Memecik"><span class="mi-ico">🫒</span><span class="mi-txt">Memecik</span></div>
+        <div class="meyve-item" data-m="zeytin_gemlik" data-ico="🫒" data-grup="Zeytin" data-cesit="Gemlik"><span class="mi-ico">🫒</span><span class="mi-txt">Gemlik</span></div>
+        <div class="meyve-grup-hd">🌱 DİĞER</div>
+        <div class="meyve-item" data-m="diger" data-ico="🌱" data-grup="Diğer" data-cesit="—"><span class="mi-ico">🌱</span><span class="mi-txt">Diğer</span></div>
+      </div>
+    </div>
+    <div class="slabel" style="margin-top:12px">📷 Fotoğraf Türü</div>
+    <div class="pills" id="type-pills">
+      <button class="pill active" data-t="genel">🌳 Ağaç</button>
+      <button class="pill" data-t="yaprak">🍃 Yaprak</button>
+      <button class="pill" data-t="meyve">🍎 Meyve</button>
+      <button class="pill" data-t="govde">🪵 Gövde</button>
+      <button class="pill" data-t="kok">🌱 Kök</button>
+    </div>
+    <div class="slabel">📸 Fotoğraflar (En fazla 5)</div>
+    <div class="dz" id="h-dz">
+      <input type="file" id="h-fi" accept="image/*" multiple>
+      <div class="dz-ico">📷</div>
+      <div class="dz-t">Fotoğraf yükle veya sürükle</div>
+      <div class="dz-s">Birden fazla seçebilirsiniz · JPG PNG WEBP · max 20MB</div>
+    </div>
+    <div class="photo-grid" id="h-photo-grid"></div>
+    <button type="button" class="voice-btn" id="voice-btn">🎤 Sesli Not Ekle</button>
+    <div class="voice-text" id="voice-text">Dinleniyor…</div>
+    <div class="errbox" id="h-err"></div>
+    <button class="btn btn-red" id="h-abtn" disabled>🔍 Analiz Et — Gemini Vision</button>
+  </div>
+  <div class="card lcard" id="h-loader"><div class="lwrap"><div class="spin"></div><div class="lt">Bahçeniz inceleniyor…</div><div class="ls" id="h-step"></div></div></div>
+  <div class="card rcard" id="h-result">
+    <div id="h-strip" class="rstrip warning"><span class="rico" id="h-ico">⚠️</span><span class="rst" id="h-st">—</span><span class="rgv" id="h-gv"></span><span class="racil" id="h-acil" style="display:none">⚠ ACİL</span></div>
+    <div class="rtitle" id="h-title"></div>
+    <div class="rsub" id="h-sub"></div>
+    <div class="sevrow" id="h-sev" style="display:none"><span class="sevlbl">Şiddet</span><div class="sevtr"><div class="sevf" id="h-sf"></div></div><span class="sevv" id="h-sv"></span></div>
+    <div class="rdesc" id="h-desc"></div>
+    <div class="ttabs">
+      <button class="ttab active" data-p="kul">🌾 Kültürel</button>
+      <button class="ttab" data-p="bio">🐞 Biyolojik</button>
+      <button class="ttab" data-p="kim">🧪 Kimyasal</button>
+    </div>
+    <div class="tpanel active" id="p-kul"><div class="tbox" id="c-kul"></div></div>
+    <div class="tpanel" id="p-bio"><div class="tbox" id="c-bio"></div></div>
+    <div class="tpanel" id="p-kim"><div class="tbox" id="c-kim"></div></div>
+    <p id="h-ref" style="margin-top:10px;font-size:.72rem;color:rgba(26,18,9,.28);font-style:italic"></p>
+    <div id="h-tedavi-box" style="margin-top:14px;display:none">
+      <div class="slabel" style="margin-bottom:10px">💊 Tedavi Uygula</div>
+      <div class="sfgrid">
+        <div class="sfg sf-full"><label>İlaç / Uygulama</label><input type="text" id="ted-ilac" placeholder="Örn: Mancozeb, budama, mantar ilacı"></div>
+        <div class="sfg"><label>Doz</label><input type="text" id="ted-doz" placeholder="Örn: 2g/L su"></div>
+        <div class="sfg"><label>Tarih</label><input type="text" id="ted-tarih" placeholder="Bugün"></div>
+        <div class="sfg sf-full"><label>Notlar</label><input type="text" id="ted-not" placeholder="Ek notlar..."></div>
+      </div>
+      <button class="btn btn-earth" id="ted-btn" style="margin-top:0">💊 Tedaviyi Kaydet</button>
+    </div>
+  </div>
+  <!-- FOTOĞRAF KARŞILAŞTIRMA (Teşhis alt bölümü) -->
+  <div class="card">
+    <div class="slabel">📊 Fotoğraf Karşılaştırma</div>
+    <div class="note info" style="margin-bottom:12px"><span class="nico">💡</span><span>Aynı ağaçtan iki farklı tarihte çekilen fotoğrafı yükleyin — hastalık ilerledi mi iyileşti mi?</span></div>
+    <div class="karsi-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div>
+        <div style="font-size:.7rem;font-weight:600;color:rgba(26,18,9,.4);margin-bottom:5px">📅 ÖNCEKİ</div>
+        <div class="karsi-slot" id="k-slot-1" style="border:2px dashed var(--brd);border-radius:9px;padding:16px;text-align:center;cursor:pointer;position:relative;background:var(--warm)">
+          <input type="file" id="k-fi-1" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
+          <img id="k-img-1" src="" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:6px;display:none">
+          <div id="k-ico-1" style="font-size:1.5rem">📷</div>
+          <div id="k-lbl-1" style="font-size:.74rem;color:rgba(26,18,9,.4);margin-top:4px">Tıkla veya sürükle</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:.7rem;font-weight:600;color:rgba(26,18,9,.4);margin-bottom:5px">📅 SONRAKİ</div>
+        <div class="karsi-slot" id="k-slot-2" style="border:2px dashed var(--brd);border-radius:9px;padding:16px;text-align:center;cursor:pointer;position:relative;background:var(--warm)">
+          <input type="file" id="k-fi-2" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
+          <img id="k-img-2" src="" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:6px;display:none">
+          <div id="k-ico-2" style="font-size:1.5rem">📷</div>
+          <div id="k-lbl-2" style="font-size:.74rem;color:rgba(26,18,9,.4);margin-top:4px">Tıkla veya sürükle</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <select id="k-aralik" style="padding:7px 10px;border:1.5px solid var(--brd);border-radius:8px;font-size:.84rem"><option value="7">1 Hafta</option><option value="14">2 Hafta</option><option value="30">1 Ay</option><option value="60">2 Ay</option></select>
+      <input type="text" id="k-meyve" placeholder="Meyve türü (isteğe bağlı)" style="flex:1;padding:7px 10px;border:1.5px solid var(--brd);border-radius:8px;font-size:.84rem">
+    </div>
+    <div class="errbox" id="k-err"></div>
+    <button class="btn btn-red" id="k-btn" disabled style="margin-bottom:8px">🔍 Karşılaştır</button>
+    <div id="k-result" style="display:none">
+      <div id="k-badge" style="display:inline-flex;padding:7px 14px;border-radius:99px;font-size:.84rem;font-weight:600;margin-bottom:10px;border:1.5px solid var(--brd)">—</div>
+      <div id="k-gozlemler" style="font-size:.87rem;line-height:1.7;color:rgba(26,18,9,.68);margin-bottom:8px"></div>
+      <div id="k-oneri-box" style="display:none;background:var(--gbg);border:1px solid rgba(181,132,58,.2);border-radius:8px;padding:10px;font-size:.84px;color:#7a4f00"><span id="k-oneri"></span></div>
+    </div>
+    <div class="card lcard" id="k-loader" style="display:none"><div class="lwrap"><div class="spin"></div><div class="lt">Karşılaştırılıyor…</div></div></div>
+  </div>
+
+  <div class="card">
+    <div class="slabel">💡 İpuçları</div>
+    <div class="tips">
+      <div class="tip"><span class="tico">☀️</span><div class="tb"><strong>Gün Işığı</strong><span>Sabah 8–10 arası gün ışığında çekin.</span></div></div>
+      <div class="tip"><span class="tico">📸</span><div class="tb"><strong>Çoklu Foto</strong><span>5 adede kadar farklı açıdan fotoğraf ekleyebilirsiniz.</span></div></div>
+      <div class="tip"><span class="tico">🎤</span><div class="tb"><strong>Sesli Not</strong><span>Ellerin kirli olduğunda sesle not bırakabilirsiniz.</span></div></div>
+      <div class="tip"><span class="tico">📅</span><div class="tb"><strong>Tedavi Takibi</strong><span>Teşhis sonrası tedaviyi kaydedin, ilerlemeyi izleyin.</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ KARŞILAŞTIRMA ══ -->
+<div class="tab-panel" id="tab-toprak">
+
+  <!-- KAYNAK SEÇİCİ PILLS -->
+  <div class="card" style="padding:12px 16px;margin-bottom:0">
+    <div class="pills" id="toprak-kaynak-pills" style="margin-bottom:0">
+      <button class="pill active" data-k="konum">📍 GPS / Konum</button>
+      <button class="pill" data-k="pdf">📄 PDF Raporu</button>
+    </div>
+  </div>
+
+  <!-- KONUM FORMU -->
+  <div id="toprak-konum-form">
+
+  <div class="card">
+    <div class="slabel">📍 Konum Bilgisi</div>
+    <div class="locbox">
+      <span class="lico">🗺️</span>
+      <div class="linf"><div class="ltit" id="loc-title">Konum girilmedi</div><div class="lcrd" id="loc-coords">GPS, koordinat veya yer adı girin</div></div>
+      <button class="lbtn" id="loc-btn">📡 GPS</button>
+    </div>
+    <div class="loc-input-row">
+      <input type="text" id="loc-ara" placeholder="İlçe / köy / mahalle ara... veya 38.4, 27.1 koordinat girin" class="loc-ara-inp">
+      <button class="lbtn" id="loc-ara-btn" style="flex-shrink:0">🔍 Ara</button>
+    </div>
+    <div id="loc-sonuclar" class="loc-sonuc-liste" style="display:none"></div>
+    <div class="sfgrid">
+      <div class="sfg"><label>Bahçe Adı</label><input type="text" id="sf-bahce" placeholder="Kuzey Parsel"></div>
+      <div class="sfg"><label>Yıl</label><input type="number" id="sf-yil" value="2025" min="2000" max="2099"></div>
+      <div class="sfg"><label>Mevsim</label><select id="sf-mevsim"><option value="">Seçin</option><option>İlkbahar</option><option>Yaz</option><option>Sonbahar</option><option>Kış</option></select></div>
+      <div class="sfg"><label>Sulama</label><select id="sf-sulama"><option value="">Seçin</option><option>Damla sulama</option><option>Yüzey sulama</option><option>Yağmurlama</option><option>Karık sulama</option><option>Sulama yok</option></select></div>
+      <div class="sfg sf-full"><label>Son Gübre</label><input type="text" id="sf-gubre" placeholder="Örn: 3 ay önce NPK 20-20-20"></div>
+      <div class="sfg sf-full"><label>Mevcut Sorunlar</label><input type="text" id="sf-sorun" placeholder="Örn: Sarılık, verim düşüklüğü"></div>
+    </div>
+    <div class="errbox" id="t-err"></div>
+    <button class="btn btn-earth" id="t-abtn" disabled>🌱 Toprak Analizi Yap & Kaydet</button>
+  </div>
+  <div class="card lcard" id="t-loader"><div class="lwrap"><div class="spin"></div><div class="lt">Toprak profili hesaplanıyor…</div><div class="ls" id="t-step"></div></div></div>
+  <div class="card rcard" id="t-result">
+    <div class="rstrip earth" style="background:var(--ebg);border-bottom:1px solid rgba(107,66,38,.14)"><span class="rico">🏔️</span><span class="rst">Toprak Analiz Raporu</span><span style="margin-left:auto;font-size:.69rem;color:rgba(26,18,9,.34);font-style:italic;font-family:Fraunces,serif" id="t-save-note"></span></div>
+    <div class="scorering"><div class="rw"><svg class="rsvg" viewBox="0 0 78 78" width="78" height="78"><circle class="rbg" cx="39" cy="39" r="31"/><circle class="rfg" id="t-ring" cx="39" cy="39" r="31" stroke-dasharray="194.8" stroke-dashoffset="194.8" stroke="var(--e1)"/></svg><div class="rscore"><span class="rnum" id="t-ring-num">—</span><span class="rlbl">Puan</span></div></div><div class="ssum"><div class="sbolge" id="t-bolge">—</div><div class="siklim" id="t-iklim">—</div><div class="sparams" id="t-params"></div></div></div>
+    <div class="rdesc" id="t-yorum"></div>
+    <div class="slabel" style="margin-bottom:10px">⚗️ Parametreler</div><div id="t-param-bars"></div>
+    <div class="slabel" style="margin:14px 0 9px">🧪 Besin Analizi</div><div class="nutgrid" id="t-nuts"></div>
+    <div class="slabel" style="margin:4px 0 9px">🔧 İyileştirme Planı</div><div class="steplist" id="t-steps"></div>
+    <div class="slabel" style="margin:14px 0 9px">📅 Mevsimsel Takvim</div><div class="takgrid" id="t-takvim"></div>
+    <div id="t-extra"></div>
+  </div>
+
+  </div>
+
+  <!-- PDF FORMU -->
+  <div id="toprak-pdf-form" style="display:none">
+
+  <div class="card">
+    <div class="slabel">📄 Laboratuvar Raporu</div>
+    <div class="note info"><span class="nico">💡</span><span>Laboratuvar PDF raporunu yükleyin. AI tüm değerleri okur, meyve bahçeniz için yorumlar.</span></div>
+    <div class="pdf-dz" id="pdf-dz" style="margin-top:11px"><input type="file" id="pdf-fi" accept=".pdf,application/pdf">
+      <div class="dz-ico">📋</div><div class="dz-t">PDF raporu yükle veya sürükle</div><div class="dz-s">PDF · max 20 MB</div>
+    </div>
+    <div class="pdf-prev" id="pdf-prev"><span style="font-size:1.9rem;flex-shrink:0">📄</span><div style="flex:1"><div class="pdf-fname" id="pdf-fname">—</div><div class="pdf-fsize" id="pdf-fsize">—</div></div><button class="pdf-rm" id="pdf-rm">✕</button></div>
+    <div class="sfgrid" style="margin-top:12px">
+      <div class="sfg"><label>Bahçe Adı</label><input type="text" id="pdf-bahce" placeholder="Kuzey Parsel"></div>
+      <div class="sfg"><label>Yıl</label><input type="number" id="pdf-yil" value="2025" min="2000" max="2099"></div>
+      <div class="sfg"><label>Mevsim</label><select id="pdf-mevsim"><option value="">Seçin</option><option>İlkbahar</option><option>Yaz</option><option>Sonbahar</option><option>Kış</option></select></div>
+      <div class="sfg"><label>Sulama</label><select id="pdf-sulama"><option value="">Seçin</option><option>Damla sulama</option><option>Yüzey sulama</option><option>Yağmurlama</option><option>Karık sulama</option><option>Sulama yok</option></select></div>
+      <div class="sfg sf-full"><label>Son Gübre</label><input type="text" id="pdf-gubre" placeholder="Örn: 3 ay önce NPK 20-20-20"></div>
+      <div class="sfg sf-full"><label>Mevcut Sorunlar</label><input type="text" id="pdf-sorun" placeholder="Örn: Sarılık"></div>
+    </div>
+    <div class="errbox" id="pdf-err"></div>
+    <button class="btn btn-earth" id="pdf-abtn" disabled>📊 PDF Analiz Et & Kaydet</button>
+  </div>
+  <div class="card lcard" id="pdf-loader"><div class="lwrap"><div class="spin"></div><div class="lt">Rapor okunuyor…</div><div class="ls" id="pdf-step"></div></div></div>
+  <div class="card rcard" id="pdf-result">
+    <div class="rstrip earth" style="background:var(--ebg);border-bottom:1px solid rgba(107,66,38,.14)"><span class="rico">📋</span><span class="rst">PDF Toprak Analiz Raporu</span><span style="margin-left:auto;font-size:.69rem;color:rgba(26,18,9,.34);font-style:italic;font-family:Fraunces,serif" id="pdf-save-note"></span></div>
+    <div class="pdf-ozet" id="pdf-ozet"><strong>📋 Rapordan Okunan Ham Değerler</strong><span id="pdf-ozet-txt"></span></div>
+    <div class="scorering"><div class="rw"><svg class="rsvg" viewBox="0 0 78 78" width="78" height="78"><circle class="rbg" cx="39" cy="39" r="31"/><circle class="rfg" id="pdf-ring" cx="39" cy="39" r="31" stroke-dasharray="194.8" stroke-dashoffset="194.8" stroke="var(--e1)"/></svg><div class="rscore"><span class="rnum" id="pdf-ring-num">—</span><span class="rlbl">Puan</span></div></div><div class="ssum"><div class="sbolge" id="pdf-bolge">—</div><div class="siklim" id="pdf-iklim">—</div><div class="sparams" id="pdf-params"></div></div></div>
+    <div class="rdesc" id="pdf-yorum"></div>
+    <div class="slabel" style="margin-bottom:10px">⚗️ Parametreler</div><div id="pdf-param-bars"></div>
+    <div class="slabel" style="margin:14px 0 9px">🧪 Besin Analizi</div><div class="nutgrid" id="pdf-nuts"></div>
+    <div class="slabel" style="margin:4px 0 9px">🔧 İyileştirme Planı</div><div class="steplist" id="pdf-steps"></div>
+    <div class="slabel" style="margin:14px 0 9px">📅 Takvim</div><div class="takgrid" id="pdf-takvim"></div>
+    <div id="pdf-extra"></div>
+  </div>
+</div>
+
+<!-- ══ YABANİ OT ══ -->
+  </div>
+
+</div>
+
+<div class="tab-panel" id="tab-yabani-ot">
+  <div class="card">
+    <div class="slabel">🌾 Yabani Ot Analizi</div>
+    <div class="note earth"><span class="nico">💡</span><span>Geniş açı fotoğraf yükleyin. AI ot türlerini tespit eder, mücadele planı hazırlar.</span></div>
+    <div class="dz" id="ot-dz" style="margin-top:11px"><input type="file" id="ot-fi" accept="image/*">
+      <div class="dz-ico">📸</div><div class="dz-t">Bahçe fotoğrafı yükle</div><div class="dz-s">Geniş açı önerilir</div>
+    </div>
+    <div class="prev-wrap" id="ot-prev-wrap"><img class="prev-img" id="ot-prev-img" src="" alt=""><button class="rm-btn" id="ot-rm">✕</button></div>
+    <div class="sfgrid" style="margin-top:12px">
+      <div class="sfg"><label>Bahçe Tipi</label><select id="ot-bahce-tipi"><option value="genel">Genel Meyve Bahçesi</option><option value="seftali">Şeftali / Nektarin</option><option value="nar">Nar Bahçesi</option><option value="uzum">Bağ / Üzüm</option><option value="zeytin">Zeytinlik</option><option value="turunçgil">Turunçgil</option></select></div>
+      <div class="sfg"><label>Sulama</label><select id="ot-sulama"><option value="">Seçin</option><option>Damla sulama</option><option>Yüzey sulama</option><option>Karık sulama</option><option>Sulama yok</option></select></div>
+      <div class="sfg sf-full"><label>Toprak Tipi</label><input type="text" id="ot-toprak" placeholder="Killi, kumlu, kireçli..."></div>
+    </div>
+    <div class="errbox" id="ot-err"></div>
+    <button class="btn btn-grn" id="ot-abtn" disabled>🌿 Yabani Ot Analizi Yap</button>
+  </div>
+  <div class="card lcard" id="ot-loader"><div class="lwrap"><div class="spin" style="border-top-color:var(--grn2)"></div><div class="lt">Yabani otlar tespit ediliyor…</div><div class="ls" id="ot-step"></div></div></div>
+  <div class="card rcard" id="ot-result">
+    <div class="weed-strip"><span style="font-size:1.25rem">🌾</span><span class="rst" style="color:#fff">Yabani Ot Analiz Raporu</span><span style="margin-left:auto;font-size:.71rem;opacity:.7" id="ot-yogunluk-lbl"></span></div>
+    <div class="rdesc" id="ot-yorum"></div>
+    <div class="sevrow" id="ot-yog-row" style="display:none"><span class="sevlbl">Yoğunluk</span><div class="sevtr"><div class="sevf" id="ot-yog-f"></div></div><span class="sevv" id="ot-yog-v">—</span></div>
+    <div class="slabel" style="margin-bottom:10px">🔍 Tespit Edilen Otlar</div>
+    <div class="weed-cards" id="ot-cards"></div>
+    <div class="slabel" style="margin:4px 0 10px">🛡️ Mücadele Planı</div>
+    <div class="mucadele-tabs"><button class="mucadele-tab active" data-mp="kulturel">🌱 Kültürel</button><button class="mucadele-tab" data-mp="biyolojik">🐛 Biyolojik</button><button class="mucadele-tab" data-mp="kimyasal">🧪 Kimyasal</button><button class="mucadele-tab" data-mp="takvim">📅 Takvim</button></div>
+    <div class="mucadele-panel active" id="mp-kulturel"><ul class="mucadele-list" id="ot-kulturel"></ul></div>
+    <div class="mucadele-panel" id="mp-biyolojik"><ul class="mucadele-list" id="ot-biyolojik"></ul></div>
+    <div class="mucadele-panel" id="mp-kimyasal"><div id="ot-kimyasal"></div></div>
+    <div class="mucadele-panel" id="mp-takvim"><div class="takgrid" id="ot-takvim"></div></div>
+    <div class="slabel" style="margin:14px 0 9px">⚡ Öncelikli Adımlar</div>
+    <ul class="mucadele-list" id="ot-oncelik"></ul>
+  </div>
+</div>
+
+<!-- ══ HAVA DURUMU ══ -->
+<div class="tab-panel" id="tab-hava">
+  <div class="card">
+    <div class="slabel">🌤️ Hava Durumu</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--g1)">📍 Konum</span><button onclick="document.getElementById('hava-result').classList.remove('show');document.getElementById('hava-yorum-wrap').style.display='none'" style="font-size:.7rem;padding:2px 8px;border:1px solid var(--brd);border-radius:5px;background:transparent;cursor:pointer;color:rgba(26,18,9,.4)">Temizle</button></div>
+    <div class="locbox" id="hava-loc-box">
+      <span class="lico">📍</span>
+      <div class="linf"><div class="ltit" id="hava-loc-title">Konum girilmedi</div><div class="lcrd" id="hava-loc-sub">GPS, koordinat veya yer adı ile arayın</div></div>
+      <button class="lbtn" id="hava-loc-btn">📡 GPS</button>
+    </div>
+    <div class="loc-input-row">
+      <input type="text" id="hava-ara" placeholder="İlçe / köy / mahalle ara... veya 38.4, 27.1 koordinat girin" class="loc-ara-inp">
+      <button class="lbtn" id="hava-ara-btn" style="flex-shrink:0">🔍 Ara</button>
+    </div>
+    <div id="hava-sonuclar" class="loc-sonuc-liste" style="display:none"></div>
+    <div class="errbox" id="hava-err"></div>
+  </div>
+  <div class="card lcard" id="hava-loader"><div class="lwrap"><div class="spin" style="border-top-color:#2d7dd2"></div><div class="lt">Hava verileri alınıyor…</div></div></div>
+  <div class="card rcard" id="hava-result">
+    <div id="hava-anlik-wrap"></div>
+    <div id="hava-yorum-wrap" style="display:none">
+      <div class="hava-yorum-kart">
+        <div class="hava-yorum-baslik">🌾 Tarımsal Hava Yorumu</div>
+        <div class="hava-yorum-txt" id="hava-genel-yorum"></div>
+        <div style="margin-bottom:6px;font-size:.75rem;opacity:.75;font-weight:600">İlaçlama Uygunluk Takvimi:</div>
+        <table class="ilaclama-tablo" id="ilaclama-tablo">
+          <thead><tr><th>Gün</th><th>Tarih</th><th>Durum</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="slabel" style="margin-bottom:10px">📅 16 Günlük Tahmin</div>
+    <div class="tahmin-grid" id="tahmin-grid"></div>
+    <div id="hava-uyari-wrap" style="display:none">
+      <div class="slabel" style="margin-bottom:10px">⚠️ Tarımsal Uyarılar</div>
+      <div class="uyari-listesi" id="uyari-listesi"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAKVİM ══ -->
+<div class="tab-panel" id="tab-takvim">
+  <div class="card">
+    <div class="slabel">📅 Bakım Takvimi Oluştur</div>
+    <div class="sfgrid">
+      <div class="sfg sf-full"><label>Bahçenizdeki Meyveler</label><input type="text" id="tak-meyveler" placeholder="Şeftali, Nar, Kiraz, Elma..."></div>
+      <div class="sfg"><label>Bölge</label><input type="text" id="tak-bolge" placeholder="Örn: Ege, Akdeniz, İç Anadolu"></div>
+      <div class="sfg"><label>Yıl</label><input type="number" id="tak-yil" value="2025" min="2020" max="2099"></div>
+      <div class="sfg"><label>Sulama Sistemi</label><select id="tak-sulama"><option value="">Seçin</option><option>Damla sulama</option><option>Yüzey sulama</option><option>Yağmurlama</option></select></div>
+      <div class="sfg sf-full"><label>Toprak / Ek Bilgi</label><input type="text" id="tak-toprak" placeholder="Killi toprak, pH 7.5, organik madde düşük..."></div>
+    </div>
+    <div class="errbox" id="tak-err"></div>
+    <button class="btn btn-red" id="tak-btn">📅 Yıllık Takvim Oluştur</button>
+  </div>
+  <div class="card lcard" id="tak-loader"><div class="lwrap"><div class="spin"></div><div class="lt">Yıllık takvim hazırlanıyor…</div><div class="ls" id="tak-step"></div></div></div>
+  <div class="card rcard" id="tak-result">
+    <div class="rstrip healthy" style="background:var(--grnbg);border-bottom:1px solid rgba(45,90,39,.15)"><span class="rico">📅</span><span class="rst">Yıllık Bakım Takvimi</span></div>
+    <div class="rdesc" id="tak-notlar" style="margin-bottom:14px"></div>
+    <div id="tak-kritik" style="margin-bottom:14px"></div>
+    <div class="takvim-grid" id="takvim-grid"></div>
+  </div>
+</div>
+
+<!-- ══ BAHÇE HARİTASI ══ -->
+<div class="tab-panel" id="tab-harita">
+  <div class="card">
+    <div class="slabel">🗺️ Bahçe Haritası</div>
+    <div class="note info"><span class="nico">💡</span><span>Haritaya tıklayarak ağaç ekleyin. Her ağacı işaretleyip bilgilerini kaydedin.</span></div>
+    <div class="harita-toolbar">
+      <button class="harita-btn active" id="harita-ekle-btn">🏡 Bahçe Ekle</button>
+      <button class="katman-btn" id="katman-normal-btn" onclick="katmanDegistir('normal')">🗺️ Harita</button>
+      <button class="katman-btn" id="katman-uydu-btn" onclick="katmanDegistir('uydu')">🛰️ Uydu</button>
+      <button class="katman-btn active" id="katman-hibrit-btn" onclick="katmanDegistir('hibrit')">🏙️ Hibrit</button>
+      <button class="harita-btn" id="harita-konum-btn">📍 Git</button>
+      <span style="font-size:.78rem;color:rgba(26,18,9,.38);margin-left:auto" id="harita-agac-sayisi">0 ağaç</span>
+    </div>
+    <div class="loc-input-row">
+      <input type="text" id="harita-ara" placeholder="Haritada konum ara: ilçe / koordinat (38.4, 27.1)" class="loc-ara-inp">
+      <button class="lbtn" id="harita-ara-btn" style="flex-shrink:0">🔍 Ara</button>
+    </div>
+    <div id="harita-sonuclar" class="loc-sonuc-liste" style="display:none"></div>
+    <div id="bahce-harita"></div>
+    <div class="agac-listesi" id="agac-listesi"></div>
+  </div>
+  <!-- AĞAÇ EKLEME MODAL -->
+  <div class="modal-overlay" id="agac-modal">
+    <div class="modal">
+      <div class="modal-head"><h3 id="bahce-modal-baslik">🏡 Bahçe Ekle</h3><button class="modal-close" id="agac-modal-close">✕</button></div>
+      <div class="modal-body">
+        <div class="sfgrid">
+          <div class="sfg sf-full"><label>Ağaç Adı / Kodu</label><input type="text" id="agac-adi" placeholder="Örn: Şeftali-01, A5"></div>
+          <div class="sfg sf-full"><label>Meyve Türü</label><input type="text" id="agac-meyve" placeholder="Örn: Şeftali Zodiac"></div>
+          <div class="sfg"><label>Dikim Yılı</label><input type="number" id="agac-yil" placeholder="2020"></div>
+          <div class="sfg"><label>Enlem (LAT)</label><input type="number" id="agac-lat-inp" step="0.0001" placeholder="38.4567"></div>
+          <div class="sfg"><label>Boylam (LON)</label><input type="number" id="agac-lon-inp" step="0.0001" placeholder="27.1234"></div>
+          <div class="sfg"><label>Durum</label><select id="agac-durum"><option value="sağlıklı">Sağlıklı</option><option value="takip">Takip Altında</option><option value="hasta">Hasta</option></select></div>
+          <div class="sfg sf-full"><label>Notlar</label><input type="text" id="agac-not" placeholder="Ek bilgi..."></div>
+        </div>
+        <button class="btn btn-grn" id="agac-kaydet-btn" style="margin-top:8px">🌳 Ağacı Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VERİM TAKİBİ ══ -->
+<div class="tab-panel" id="tab-arsiv">
+  <div class="card">
+    <div class="slabel">📂 Sezon Arşivi</div>
+    <div class="arsiv-toolbar">
+      <select id="fil-yil"><option value="">Tüm Yıllar</option></select>
+      <select id="fil-mevsim"><option value="">Tüm Mevsimler</option><option>İlkbahar</option><option>Yaz</option><option>Sonbahar</option><option>Kış</option></select>
+      <select id="fil-bahce"><option value="">Tüm Bahçeler</option></select>
+      <button onclick="loadArsiv()" style="padding:6px 11px;background:var(--e1);color:#fff;border:none;border-radius:7px;font-size:.75rem;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">🔄 Yenile</button>
+      <span class="arsiv-count" id="arsiv-count"></span>
+    </div>
+    <div class="compare-panel" id="compare-panel">
+      <div class="cp-title">📊 Karşılaştırma <span id="cp-label" style="font-family:DM Sans,sans-serif;font-size:.74rem;font-weight:400;color:rgba(26,18,9,.4)"></span></div>
+      <div style="overflow-x:auto"><table class="cp-table" id="cp-table"><thead><tr><th>Parametre</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="compare-grid" id="arsiv-grid"><div class="hempty" style="grid-column:1/-1">Toprak Analizi sekmesinden analiz yaparak başlayın</div></div>
+  </div>
+</div>
+
+<!-- ══ RAPOR ══ -->
+<div class="tab-panel" id="tab-rapor">
+
+  <!-- VERİM KAYDI -->
+  <div class="card">
+    <div class="slabel">📈 Hızlı Verim Kaydı</div>
+    <div class="sfgrid">
+      <div class="sfg sf-full"><label>Meyve Türü</label><input type="text" id="v-meyve" placeholder="Şeftali Zodiac, Hicaz Nar..."></div>
+      <div class="sfg"><label>Yıl</label><input type="number" id="v-yil" value="2025" min="2000" max="2099"></div>
+      <div class="sfg"><label>Gerçekleşen (kg/da)</label><input type="number" id="v-gercek" placeholder="2500" min="0"></div>
+      <div class="sfg"><label>Hedef (kg/da)</label><input type="number" id="v-hedef" placeholder="3000" min="0"></div>
+      <div class="sfg"><label>Ağaç Sayısı</label><input type="number" id="v-agac" placeholder="120" min="0"></div>
+      <div class="sfg"><label>Fiyat (TL/kg)</label><input type="number" id="v-fiyat" placeholder="25" min="0"></div>
+      <div class="sfg sf-full"><label>Notlar</label><input type="text" id="v-not" placeholder="Hastalık etkisi, hava koşulları..."></div>
+    </div>
+    <div class="errbox" id="v-err"></div>
+    <button class="btn btn-grn" id="v-btn">📈 Verim Kaydını Ekle</button>
+  </div>
+  <div class="card">
+    <div class="slabel">📊 Verim Geçmişi</div>
+    <div class="verim-grid" id="verim-listesi"><div class="hempty">Henüz verim kaydı yok</div></div>
+  </div>
+
+  <div class="card">
+
+    <div class="slabel">📑 Yıllık Bahçe Raporu</div>
+    <div class="sfgrid">
+      <div class="sfg"><label>Rapor Yılı</label><input type="number" id="rapor-yil" value="2025" min="2000" max="2099"></div>
+      <div class="sfg"><label>Bahçe Adı</label><input type="text" id="rapor-bahce" placeholder="Tüm bahçeler"></div>
+    </div>
+    <button class="btn btn-red" id="rapor-btn">📊 Raporu Görüntüle</button>
+    <div class="errbox" id="rapor-err"></div>
+    <button class="btn btn-earth" id="rapor-yazdir-btn" style="margin-top:7px">🖨️ Yazdır / PDF Kaydet</button>
+  </div>
+  <div class="card rcard" id="rapor-result">
+    <div class="rstrip healthy" style="background:var(--grnbg);border-bottom:1px solid rgba(45,90,39,.14)"><span class="rico">📑</span><span class="rst" id="rapor-baslik">Yıllık Rapor</span></div>
+    <div class="rapor-ozet" id="rapor-ozet"></div>
+    <div class="slabel" style="margin-bottom:10px">🌱 Toprak Analizleri</div>
+    <div id="rapor-analizler"></div>
+    <div class="slabel" style="margin:14px 0 10px">📈 Verim Bilgileri</div>
+    <div id="rapor-verim"></div>
+    <div class="slabel" style="margin:14px 0 10px">💊 Uygulanan Tedaviler</div>
+    <div id="rapor-tedavi"></div>
+  <div class="card" style="margin-top:13px">
+    <div class="slabel">🔬 Teşhis Geçmişi</div>
+    <div class="hgrid" id="hgrid"><div class="hempty">Henüz analiz yapılmadı</div></div>
+  </div>
+  <div class="card" style="margin-top:13px">
+    <div class="slabel">💊 Tedavi Geçmişi</div>
+    <div id="tedavi-gecmis"><div class="hempty">Henüz tedavi kaydı yok</div></div>
+  </div>
+</div>
+
+<!-- ══ GEÇMİŞ paneli Arşiv sekmesine taşındı ══ -->
+
+<!-- ════ SUPABASE SENKRONIZASYON ════ -->
+<div class="tab-panel" id="tab-supabase">
+
+  <div class="card">
+    <div class="slabel">☁️ Supabase Bağlantısı</div>
+    <p style="font-size:.86rem;line-height:1.7;color:rgba(26,18,9,.65);margin-bottom:14px">
+      <a href="https://supabase.com" target="_blank" style="color:var(--b1);font-weight:600">supabase.com</a> adresinden ücretsiz proje oluşturun →
+      <strong>Settings → API</strong> sayfasından <strong>Project URL</strong> ve <strong>anon public key</strong>'i kopyalayıp aşağıya yapıştırın.
+    </p>
+
+    <label style="font-size:.72rem;font-weight:600;color:rgba(26,18,9,.45);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px">🔗 Project URL</label>
+    <input type="text" id="sb-url"
+      placeholder="https://xxxxxxxxxxxx.supabase.co"
+      style="width:100%;padding:11px 14px;border:1.5px solid var(--brd);border-radius:9px;font-size:.9rem;margin-bottom:12px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box">
+
+    <label style="font-size:.72rem;font-weight:600;color:rgba(26,18,9,.45);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px">🔑 Anon Key (Public)</label>
+    <input type="text" id="sb-key"
+      placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+      style="width:100%;padding:11px 14px;border:1.5px solid var(--brd);border-radius:9px;font-size:.82rem;margin-bottom:14px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;word-break:break-all">
+
+    <div class="errbox" id="sb-err"></div>
+    <button id="sb-kaydet-btn" class="btn btn-blue" style="font-size:.95rem">💾 Ayarları Kaydet</button>
+  </div>
+
+  <div class="card" id="sb-sync-kart" style="margin-top:0">
+    <div class="slabel">🔄 Manuel Senkronizasyon</div>
+    <div id="sb-url-uyari" style="background:var(--gbg);border:1px solid rgba(181,132,58,.22);border-radius:8px;padding:10px 13px;font-size:.84rem;color:#7a4f00;margin-bottom:12px">
+      ⚠️ Önce URL ve Anon Key girin, <strong>Ayarları Kaydet</strong>'e basın.
+    </div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:13px">
+      <button id="sb-cek-btn" class="btn btn-blue" style="width:auto;margin-top:0;padding:11px 22px;flex:1">⬇️ Veri Çek</button>
+      <button id="sb-gonder-btn" class="btn btn-earth" style="width:auto;margin-top:0;padding:11px 22px;flex:1">⬆️ Veri Gönder</button>
+    </div>
+    <div id="sb-durum" style="font-size:.8rem;color:rgba(26,18,9,.45);margin-bottom:10px" id="sb-son-sync">Henüz senkronize edilmedi</div>
+    <div id="sb-log" style="background:#1a1209;color:#a8ff78;border-radius:9px;padding:12px 14px;font-family:monospace;font-size:.78rem;line-height:1.7;min-height:70px;max-height:220px;overflow-y:auto;white-space:pre-wrap;display:none"></div>
+    <div id="sb-istatistik" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:11px"></div>
+  </div>
+
+</div>
+
+</main>
+
+<!-- MOBİL BOTTOM NAV -->
+<div id="mob-nav">
+  <div class="mob-nav-in">
+    <button class="mob-tab active" data-tab="hastalik"><span class="mt-ico">🔬</span><span class="mt-lbl">Teşhis</span></button>
+    <button class="mob-tab" data-tab="toprak"><span class="mt-ico">🌱</span><span class="mt-lbl">Toprak</span></button>
+    <button class="mob-tab" data-tab="hava"><span class="mt-ico">🌤️</span><span class="mt-lbl">Hava</span></button>
+    <button class="mob-tab" data-tab="harita"><span class="mt-ico">🗺️</span><span class="mt-lbl">Harita</span></button>
+    <button class="mob-tab" data-tab="arsiv"><span class="mt-ico">📂</span><span class="mt-lbl">Arşiv</span></button>
+    <button class="mob-tab" data-tab="diger-menu"><span class="mt-ico">⋯</span><span class="mt-lbl">Diğer</span></button>
+  </div>
+</div>
+<!-- MOBİL DİĞER MENÜ -->
+<div id="mob-diger" style="display:none;position:fixed;bottom:68px;left:0;right:0;background:#fff;border-top:1px solid var(--brd);z-index:499;padding:10px;box-shadow:0 -4px 20px rgba(26,18,9,.1)">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">
+    <button class="mob-tab" data-tab="yabani-ot" style="min-width:unset"><span class="mt-ico">🌾</span><span class="mt-lbl">Ot</span></button>
+    <button class="mob-tab" data-tab="takvim" style="min-width:unset"><span class="mt-ico">📅</span><span class="mt-lbl">Takvim</span></button>
+    <button class="mob-tab" data-tab="rapor" style="min-width:unset"><span class="mt-ico">📑</span><span class="mt-lbl">Rapor</span></button>
+    <button class="mob-tab" data-tab="supabase" style="min-width:unset"><span class="mt-ico">☁️</span><span class="mt-lbl">Sync</span></button>
+  </div>
+</div>
+<!-- PWA INSTALL BANNER -->
+<div id="pwa-banner">
+  <span class="pwa-ico">🌿</span>
+  <div class="pwa-txt"><strong>Ana Ekrana Ekle</strong>Uygulama gibi çalışsın, offline erişim sağlasın</div>
+  <button class="pwa-kur" id="pwa-kur-btn">Ekle</button>
+  <button class="pwa-kapat" id="pwa-kapat-btn">✕</button>
+</div>
+
+<footer>© 2025 Bahçe Danışmanı v3.0 · Yapay zeka önerileri uzman tarım mühendisi görüşünün yerini tutmaz</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal"><div class="modal-head"><h3 id="modal-title">Detay</h3><button class="modal-close" id="modal-close">✕</button></div><div class="modal-body" id="modal-body"></div></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const API = window.location.origin === 'http://localhost:3000' ? 'http://localhost:3000' : window.location.origin;
+
+async function apiFetch(url, opts={}) {
+  const headers = {'Content-Type':'application/json', ...(opts.headers||{})};
+  return fetch(API + url, {...opts, headers});
+}
+
+let selMeyve='seftali', selType='genel';
+let hFotos=[], otImgB64=null, pdfB64=null;
+let locLat=null, locLon=null;
+let haritaMap=null, bahceLayer=null, ekleMode=true, pendingLatLng=null;
+let sesYazisi='', sesAktif=false, recognition=null;
+// Teşhis geçmişini localStorage'dan yükle
+let imgHist = (()=>{ try{ return JSON.parse(localStorage.getItem('bahce_img_hist')||'[]'); }catch{return[];} })();
+let selectedForCompare=[];
+// Sayfa yüklenince geçmişi göster
+(function renderInitHist(){
+const g=document.getElementById('hgrid');
+if(!g) return;
+if(imgHist.length){
+  g.innerHTML=imgHist.map(h=>`<div class="hthumb" title="${h.label||''}"><img src="${h.src}" alt=""><div class="hbadge">${(h.label||'').substring(0,15)}</div></div>`).join('');
+}
+})();
+
+// ══ NAV ══
+document.querySelectorAll('.ntab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.ntab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    var panel = document.getElementById('tab-'+t.dataset.tab);
+    if(panel) panel.classList.add('active');
+    if(t.dataset.tab==='arsiv') loadArsiv();
+    if(t.dataset.tab==='harita') initHarita();
+    if(t.dataset.tab==='verim') loadVerim();
+    if(t.dataset.tab==='gecmis') loadTedaviGecmis();
+    if(t.dataset.tab==='arsiv'){ loadArsiv(); loadTedaviGecmis(); }
+    if(t.dataset.tab==='rapor'){ loadVerim(); var sbr=document.getElementById('supabase-in-rapor'); if(sbr&&sbUrl&&sbKey) sbr.style.display='block'; }
+    if(t.dataset.tab==='supabase') initSupabaseTab();
+    if(t.dataset.tab==='hava' && locLat) fetchHava(locLat, locLon);
+  });
+});
+
+// ══ MEYVE DROPDOWN ══
+const meyTrigger=document.getElementById('meyve-trigger');
+const meyMenu=document.getElementById('meyve-menu');
+meyTrigger.addEventListener('click',()=>{ meyTrigger.classList.toggle('open'); meyMenu.classList.toggle('open'); });
+document.addEventListener('click',e=>{ if(!meyTrigger.contains(e.target)&&!meyMenu.contains(e.target)){meyTrigger.classList.remove('open');meyMenu.classList.remove('open');} });
+document.querySelectorAll('.meyve-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    document.querySelectorAll('.meyve-item').forEach(x=>x.classList.remove('active'));
+    item.classList.add('active'); selMeyve=item.dataset.m;
+    document.getElementById('sel-ico').textContent=item.dataset.ico;
+    document.getElementById('sel-txt').textContent=item.dataset.grup;
+    document.getElementById('sel-cesit').textContent='— '+item.dataset.cesit;
+    meyTrigger.classList.remove('open'); meyMenu.classList.remove('open');
+  });
+});
+
+// ══ TYPE PILLS ══
+document.querySelectorAll('#type-pills .pill').forEach(p=>{
+  p.addEventListener('click',()=>{ document.querySelectorAll('#type-pills .pill').forEach(x=>x.classList.remove('active')); p.classList.add('active'); selType=p.dataset.t; });
+});
+
+// ══ TREATMENT TABS (delegated) ══
+document.addEventListener('click',e=>{
+  const tab=e.target.closest('.ttab');
+  if(!tab) return;
+  const card=tab.closest('.card,.rcard');
+  if(!card) return;
+  card.querySelectorAll('.ttab').forEach(t=>t.classList.remove('active'));
+  card.querySelectorAll('.tpanel').forEach(p=>p.classList.remove('active'));
+  tab.classList.add('active');
+  const panel=card.querySelector('#p-'+tab.dataset.p);
+  if(panel) panel.classList.add('active');
+});
+
+// ══ MUCADELE TABS ══
+document.querySelectorAll('.mucadele-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.mucadele-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.mucadele-panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('mp-'+tab.dataset.mp).classList.add('active');
+  });
+});
+
+// ══ HELPERS ══
+function showErr(id,m){const e=document.getElementById(id);e.textContent=m;e.classList.add('show');}
+function hideErr(id){document.getElementById(id).classList.remove('show');}
+
+const loaderSteps={
+  h:['Görüntüler işleniyor…','Gemini Vision analiz ediyor…','Hastalık veritabanı taranıyor…','Tedavi önerileri hazırlanıyor…'],
+  t:['Konum verileri işleniyor…','Bölge iklim profili çıkarılıyor…','Toprak tipi analiz ediliyor…','İyileştirme planı hazırlanıyor…'],
+  pdf:['PDF okunuyor…','Ölçüm değerleri çıkarılıyor…','İdeal değerlerle karşılaştırılıyor…','Plan hazırlanıyor…'],
+  ot:['Görüntü işleniyor…','Ot türleri tespit ediliyor…','Mücadele planı hazırlanıyor…','Takvim oluşturuluyor…'],
+  k:['Fotoğraflar yükleniyor…','Değişimler analiz ediliyor…','Rapor hazırlanıyor…'],
+  tak:['Bahçe bilgileri işleniyor…','Aylık plan oluşturuluyor…','Takvim finalize ediliyor…'],
+};
+let loopTimers={};
+function startLoader(prefix){
+  document.getElementById(prefix+'-loader').classList.add('show');
+  const steps=loaderSteps[prefix]||['İşleniyor…']; let i=0;
+  const el=document.getElementById(prefix+'-step');
+  if(el) el.textContent=steps[0];
+  loopTimers[prefix]=setInterval(()=>{i=(i+1)%steps.length; if(el) el.textContent=steps[i];},1700);
+}
+function stopLoader(prefix){document.getElementById(prefix+'-loader').classList.remove('show');clearInterval(loopTimers[prefix]);}
+
+function resizeEncode(file,cb){
+  const r=new FileReader(); r.onerror=()=>cb(null,null);
+  r.onload=e=>{
+    const img=new Image(); img.onerror=()=>cb(null,null);
+    img.onload=()=>{
+      const M=1300; let w=img.width,h=img.height;
+      if(w>M||h>M){if(w>=h){h=Math.round(h*M/w);w=M;}else{w=Math.round(w*M/h);h=M;}}
+      const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      const out=cv.toDataURL('image/jpeg',.88);
+      cb(out.split(',')[1], out);
+    }; img.src=e.target.result;
+  }; r.readAsDataURL(file);
+}
+
+// ══ SESLİ NOT ══
+const voiceBtn=document.getElementById('voice-btn');
+const voiceText=document.getElementById('voice-text');
+if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR(); recognition.lang='tr-TR'; recognition.continuous=false; recognition.interimResults=false;
+  recognition.onresult=e=>{ sesYazisi=e.results[0][0].transcript; voiceText.textContent='🎤 "'+sesYazisi+'"'; voiceText.classList.add('show'); };
+  recognition.onend=()=>{ voiceBtn.classList.remove('recording'); voiceBtn.innerHTML='🎤 Sesli Not Ekle'; sesAktif=false; };
+  voiceBtn.addEventListener('click',()=>{
+    if(sesAktif){recognition.stop();}
+    else{ sesYazisi=''; recognition.start(); voiceBtn.classList.add('recording'); voiceBtn.innerHTML='⏹ Durdurmak için tıkla'; sesAktif=true; voiceText.textContent='Dinleniyor…'; voiceText.classList.add('show'); }
+  });
+} else { voiceBtn.style.display='none'; }
+
+// ══ ÇOKLU FOTO UPLOAD ══
+const hDz=document.getElementById('h-dz'), hFi=document.getElementById('h-fi');
+const hPhotoGrid=document.getElementById('h-photo-grid');
+const hBtn=document.getElementById('h-abtn');
+hDz.addEventListener('dragover',e=>{e.preventDefault();hDz.classList.add('over');});
+hDz.addEventListener('dragleave',()=>hDz.classList.remove('over'));
+hDz.addEventListener('drop',e=>{e.preventDefault();hDz.classList.remove('over');[...e.dataTransfer.files].forEach(f=>addHoto(f));});
+hFi.addEventListener('change',()=>{[...hFi.files].forEach(f=>addHoto(f)); hFi.value='';});
+
+function addHoto(file){
+  if(!file.type.startsWith('image/')||hFotos.length>=5) return;
+  hideErr('h-err');
+  resizeEncode(file,(b64,dataUrl)=>{
+    if(!b64) return;
+    const id=Date.now()+'_'+Math.random();
+    hFotos.push({id,b64,dataUrl});
+    renderFotos(); hBtn.disabled=false;
+  });
+}
+function renderFotos(){
+  hPhotoGrid.innerHTML=hFotos.map(f=>`
+    <div class="photo-thumb">
+      <img src="${f.dataUrl}" alt="">
+      <button class="rm-x" onclick="removeHoto('${f.id}')">✕</button>
+    </div>`).join('');
+}
+function removeHoto(id){ hFotos=hFotos.filter(f=>f.id!==id); renderFotos(); if(!hFotos.length) hBtn.disabled=true; }
+
+// ══ HASTALIK ANALİZ ══
+hBtn.addEventListener('click',async()=>{
+  if(!hFotos.length) return;
+  hideErr('h-err'); hBtn.disabled=true;
+  document.getElementById('h-result').classList.remove('show');
+  startLoader('h');
+  try{
+    const fotograflar=hFotos.map(f=>f.b64);
+    const res=await apiFetch('/api/teshis',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({fotograflar,mimeType:'image/jpeg',fotografTuru:selType,meyve:selMeyve,sesYazisi})});
+    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error||'Hata '+res.status);}
+    const d=await res.json(); if(d.error) throw new Error(d.error);
+    stopLoader('h'); renderHastalik(d);
+    if(hFotos[0]) addImgHist(hFotos[0].dataUrl, d.tespit||selMeyve);
+  }catch(e){stopLoader('h');showErr('h-err','Hata: '+e.message);}
+  hBtn.disabled=false;
+});
+
+function renderHastalik(d){
+  const du=(d.durum||'').toLowerCase();
+  const strip=document.getElementById('h-strip');
+  strip.className='rstrip '+(du.includes('sag')?'healthy':du==='tehlike'?'danger':'warning');
+  document.getElementById('h-ico').textContent=du.includes('sag')?'✅':du==='tehlike'?'🚨':'⚠️';
+  document.getElementById('h-st').textContent=(d.durum||'ANALİZ').toUpperCase();
+  document.getElementById('h-gv').textContent=d.guven_skoru||'';
+  document.getElementById('h-acil').style.display=d.acil_mi?'inline':'none';
+  document.getElementById('h-title').textContent=d.tespit||'—';
+  document.getElementById('h-sub').innerHTML=[d.etkilened_bolge?'📍 '+d.etkilened_bolge:'',d.siddet?'📊 '+d.siddet:'',d.tedavi_suresi?'⏱ '+d.tedavi_suresi:''].filter(Boolean).map(s=>`<span>${s}</span>`).join('');
+  const pct=d.siddet_yuzdesi;
+  const sr=document.getElementById('h-sev');
+  if(pct!=null){sr.style.display='flex';document.getElementById('h-sv').textContent=d.siddet||'';const sf=document.getElementById('h-sf');sf.className='sevf '+(pct<=33?'low':pct<=66?'med':'high');requestAnimationFrame(()=>setTimeout(()=>{sf.style.width=pct+'%';},80));}
+  else sr.style.display='none';
+  document.getElementById('h-desc').textContent=d.aciklama||'';
+  document.getElementById('c-kul').textContent=d.kulturel_onlem||'—';
+  document.getElementById('c-bio').textContent=d.biyolojik_onlem||'—';
+  document.getElementById('c-kim').textContent=d.kimyasal_onlem||'—';
+  document.getElementById('h-ref').textContent=d.referans?'📚 '+d.referans:'';
+  if(d.durum!=='saglikli'){document.getElementById('h-tedavi-box').style.display='block';}
+  const rc=document.getElementById('h-result'); rc.classList.add('show');
+  rc.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ══ TEDAVİ KAYDET ══
+document.getElementById('ted-btn').addEventListener('click',async()=>{
+  const ilac=document.getElementById('ted-ilac').value;
+  if(!ilac){showErr('h-err','İlaç/uygulama adı girin.');return;}
+  try{
+    await apiFetch('/api/tedavi',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ilac,doz:document.getElementById('ted-doz').value,tarih:document.getElementById('ted-tarih').value||new Date().toISOString(),notlar:document.getElementById('ted-not').value})});
+    document.getElementById('ted-btn').textContent='✅ Kaydedildi!';
+    setTimeout(()=>document.getElementById('ted-btn').textContent='💊 Tedaviyi Kaydet',2000);
+  }catch(e){showErr('h-err','Kayıt hatası: '+e.message);}
+});
+
+// ══ KARŞILAŞTIRMA ══
+let kB64_1=null, kB64_2=null;
+['1','2'].forEach(n=>{
+  const fi=document.getElementById('k-fi-'+n);
+  const slot=document.getElementById('k-slot-'+n);
+  fi.addEventListener('change',()=>{ if(fi.files[0]) loadKarsi(fi.files[0],n); });
+  slot.addEventListener('dragover',e=>{e.preventDefault();slot.classList.add('over');});
+  slot.addEventListener('drop',e=>{e.preventDefault();slot.classList.remove('over');if(e.dataTransfer.files[0])loadKarsi(e.dataTransfer.files[0],n);});
+});
+function loadKarsi(file,n){
+  resizeEncode(file,(b64,dataUrl)=>{
+    if(!b64) return;
+    if(n==='1') kB64_1=b64; else kB64_2=b64;
+    const img=document.getElementById('k-img-'+n);
+    img.src=dataUrl; img.classList.add('show');
+    document.getElementById('k-ico-'+n).style.display='none';
+    document.getElementById('k-slot-'+n).classList.add('has-img');
+    document.getElementById('k-lbl-'+n).textContent='Fotoğraf yüklendi ✓';
+    document.getElementById('k-btn').disabled=!(kB64_1&&kB64_2);
+  });
+}
+document.getElementById('k-btn').addEventListener('click',async()=>{
+  if(!kB64_1||!kB64_2) return;
+  hideErr('k-err'); document.getElementById('k-btn').disabled=true;
+  document.getElementById('k-result').classList.remove('show');
+  startLoader('k');
+  try{
+    const res=await apiFetch('/api/karsilastir',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({foto1:kB64_1,foto2:kB64_2,meyve:document.getElementById('k-meyve').value,aralikGun:parseInt(document.getElementById('k-aralik').value)})});
+    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error||'Hata '+res.status);}
+    const d=await res.json(); if(d.error) throw new Error(d.error);
+    stopLoader('k'); renderKarsilastir(d);
+  }catch(e){stopLoader('k');showErr('k-err','Hata: '+e.message);}
+  document.getElementById('k-btn').disabled=false;
+});
+function renderKarsilastir(d){
+  const badge=document.getElementById('k-badge');
+  badge.className='karsi-badge '+(d.sonuc||'degismedi');
+  const labels={'iyilesti':'✅ İyileşme Görüldü','kotu_gitti':'🚨 Durum Kötüleşti','degismedi':'➡️ Değişim Yok'};
+  badge.textContent=(labels[d.sonuc]||d.sonuc||'—')+(d.degisim_yuzdesi?(' — %'+d.degisim_yuzdesi):'');
+  document.getElementById('k-gozlemler').textContent=d.gozlemler||'';
+  const ob=document.getElementById('k-oneri-box');
+  if(d.oneri){ob.style.display='flex';document.getElementById('k-oneri').textContent=d.oneri;}
+  else ob.style.display='none';
+  document.getElementById('k-result').classList.add('show');
+}
+
+// ══ KONUM (ortak) ══
+function getKonum(onSuccess, errElId){
+  if(!navigator.geolocation){showErr(errElId,'Tarayıcı konum desteklemiyor.');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    locLat=pos.coords.latitude; locLon=pos.coords.longitude;
+    onSuccess(locLat,locLon);
+  },err=>{showErr(errElId,'Konum alınamadı: '+err.message);},{enableHighAccuracy:true,timeout:12000});
+}
+
+document.getElementById('loc-btn').addEventListener('click',()=>{
+  const btn=document.getElementById('loc-btn'); btn.disabled=true; btn.textContent='⏳';
+  getKonum((lat,lon)=>{
+    document.getElementById('loc-title').textContent='✅ Konum alındı';
+    document.getElementById('loc-coords').textContent=lat.toFixed(5)+'°K '+lon.toFixed(5)+'°D';
+    document.getElementById('t-abtn').disabled=false;
+    btn.textContent='🔄 Güncelle'; btn.disabled=false;
+  },'t-err');
+});
+
+// ══ TOPRAK (KONUM) ══
+document.getElementById('t-abtn').addEventListener('click',async()=>{
+  if(!locLat||!locLon){showErr('t-err','Önce konumu alın.');return;}
+  hideErr('t-err'); document.getElementById('t-abtn').disabled=true;
+  document.getElementById('t-result').classList.remove('show'); startLoader('t');
+  try{
+    const body={lat:locLat,lon:locLon,bahceAdi:document.getElementById('sf-bahce').value,yil:document.getElementById('sf-yil').value,mevsim:document.getElementById('sf-mevsim').value,sulama:document.getElementById('sf-sulama').value,gubre:document.getElementById('sf-gubre').value,sorun:document.getElementById('sf-sorun').value};
+    const res=await apiFetch('/api/toprak',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error||'Hata '+res.status);}
+    const d=await res.json(); if(d.error) throw new Error(d.error);
+    stopLoader('t'); document.getElementById('t-save-note').textContent=d._kaydedildi?'✅ Kaydedildi':'';
+    renderToprak(d,'t');
+  }catch(e){stopLoader('t');showErr('t-err','Hata: '+e.message);}
+  document.getElementById('t-abtn').disabled=false;
+});
+
+// ══ PDF UPLOAD ══
+const pdfDz=document.getElementById('pdf-dz'), pdfFi=document.getElementById('pdf-fi');
+const pdfPrev=document.getElementById('pdf-prev'), pdfBtn=document.getElementById('pdf-abtn');
+pdfDz.addEventListener('dragover',e=>{e.preventDefault();pdfDz.classList.add('over');});
+pdfDz.addEventListener('dragleave',()=>pdfDz.classList.remove('over'));
+pdfDz.addEventListener('drop',e=>{e.preventDefault();pdfDz.classList.remove('over');if(e.dataTransfer.files[0])loadPdf(e.dataTransfer.files[0]);});
+pdfFi.addEventListener('change',()=>{if(pdfFi.files[0])loadPdf(pdfFi.files[0]);});
+function loadPdf(file){
+  if(!file.name.toLowerCase().endsWith('.pdf')&&file.type!=='application/pdf'){showErr('pdf-err','PDF seçin.');return;}
+  if(file.size>20*1024*1024){showErr('pdf-err','20 MB sınırı.');return;}
+  hideErr('pdf-err');
+  const r=new FileReader(); r.onload=e=>{pdfB64=e.target.result.split(',')[1];document.getElementById('pdf-fname').textContent=file.name;document.getElementById('pdf-fsize').textContent=(file.size/1024).toFixed(0)+' KB';pdfPrev.classList.add('show');pdfBtn.disabled=false;}; r.readAsDataURL(file);
+}
+document.getElementById('pdf-rm').addEventListener('click',()=>{pdfB64=null;pdfFi.value='';pdfPrev.classList.remove('show');pdfBtn.disabled=true;hideErr('pdf-err');document.getElementById('pdf-result').classList.remove('show');});
+
+pdfBtn.addEventListener('click',async()=>{
+  if(!pdfB64) return;
+  hideErr('pdf-err'); pdfBtn.disabled=true;
+  document.getElementById('pdf-result').classList.remove('show'); startLoader('pdf');
+  try{
+    const body={pdfBase64:pdfB64,bahceAdi:document.getElementById('pdf-bahce').value,yil:document.getElementById('pdf-yil').value,mevsim:document.getElementById('pdf-mevsim').value,sulama:document.getElementById('pdf-sulama').value,gubre:document.getElementById('pdf-gubre').value,sorun:document.getElementById('pdf-sorun').value};
+    const res=await apiFetch('/api/toprak-pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error||'Hata '+res.status);}
+    const d=await res.json(); if(d.error) throw new Error(d.error);
+    stopLoader('pdf'); document.getElementById('pdf-save-note').textContent=d._kaydedildi?'✅ Kaydedildi':'';
+    if(d.pdf_ozeti){document.getElementById('pdf-ozet-txt').textContent=d.pdf_ozeti;document.getElementById('pdf-ozet').classList.add('show');}
+    renderToprak(d,'pdf');
+  }catch(e){stopLoader('pdf');showErr('pdf-err','Hata: '+e.message);}
+  pdfBtn.disabled=false;
+});
+
+// ══ TOPRAK RENDER (ortak) ══
+function renderToprak(d,prefix){
+  const puan=d.genel_puan||0;
+  document.getElementById(prefix+'-ring-num').textContent=puan;
+  const ring=document.getElementById(prefix+'-ring');
+  const circ=2*Math.PI*31; ring.setAttribute('stroke-dasharray',circ);
+  ring.style.stroke=puan>=70?'var(--grn2)':puan>=45?'var(--g1)':'var(--r2)';
+  requestAnimationFrame(()=>setTimeout(()=>{ring.style.strokeDashoffset=circ*(1-puan/100);},100));
+  document.getElementById(prefix+'-bolge').textContent=(d.bolge_adi||'—')+' — '+(d.toprak_tipi||'');
+  document.getElementById(prefix+'-iklim').textContent=(d.iklim_tipi||'')+' | '+(d.yillik_yagis||'—');
+  document.getElementById(prefix+'-yorum').textContent=d.genel_yorum||'';
+  const pb=document.getElementById(prefix+'-params'); pb.innerHTML='';
+  [{lbl:'pH: '+(d.ph_mevcut||'?'),cls:d.ph_durumu==='uygun'?'spgood':d.ph_durumu&&d.ph_durumu.includes('cok')?'spbad':'spwarn'},
+   {lbl:'Organik: '+(d.organik_madde||'?'),cls:['Yüksek','Yuksek'].includes(d.organik_madde)?'spgood':['Düşük','Dusuk'].includes(d.organik_madde)?'spbad':'spwarn'},
+   {lbl:'Drenaj: '+(d.drenaj||'?'),cls:['İyi','Iyi'].includes(d.drenaj)?'spgood':['Zayıf','Zayif'].includes(d.drenaj)?'spbad':'spwarn'},
+   {lbl:'Tuzluluk: '+(d.tuzluluk_riski||'?'),cls:['Düşük','Dusuk'].includes(d.tuzluluk_riski)?'spgood':['Yüksek','Yuksek'].includes(d.tuzluluk_riski)?'spbad':'spwarn'},
+  ].forEach(b=>{const s=document.createElement('span');s.className='spb '+b.cls;s.textContent=b.lbl;pb.appendChild(s);});
+  const pbars=document.getElementById(prefix+'-param-bars');
+  const phVal=parseFloat((d.ph_mevcut||'7').replace(/[^\d.]/g,''))||7;
+  const phPct=Math.min(100,Math.max(0,((phVal-4)/10)*100));
+  pbars.innerHTML=`<div class="sevrow"><span class="sevlbl">pH Mevcut</span><div class="sevtr"><div class="sevf ${d.ph_durumu==='uygun'?'low':d.ph_durumu&&d.ph_durumu.includes('cok')?'high':'med'}" style="width:${phPct}%"></div></div><span class="sevv">${d.ph_mevcut||'?'}</span></div><p style="font-size:.7rem;color:rgba(26,18,9,.32);margin:-3px 0 11px 77px">İdeal: ${d.ph_ideal||'6.5–7.5'}</p>`;
+  const ng=document.getElementById(prefix+'-nuts'); ng.innerHTML='';
+  (d.eksik_besinler||[]).forEach(n=>{
+    const mv=n.mevcut_deger?`<span style="font-size:.69rem;background:rgba(107,66,38,.08);padding:1px 5px;border-radius:4px;margin-bottom:3px;display:inline-block">Rapor: ${n.mevcut_deger}${n.ideal_deger?' → İdeal: '+n.ideal_deger:''}</span><br>`:'';
+    ng.innerHTML+=`<div class="nutcard"><div class="nutname">${n.besin||''}</div>${mv}<div class="nutbel">${n.belirti||''}</div><div class="nutrec">${n.oneri||''}</div></div>`;
+  });
+  if(!d.eksik_besinler||!d.eksik_besinler.length) ng.innerHTML='<div class="hempty">Belirgin besin eksikliği yok</div>';
+  const sl=document.getElementById(prefix+'-steps'); sl.innerHTML='';
+  (d.iyilestirme_adimlari||[]).forEach(s=>{
+    const bc=(s.oncelik||'').toLowerCase().replace(/\s+/g,'-');
+    sl.innerHTML+=`<div class="stepitem"><span class="stepbadge ${bc}">${s.oncelik||'—'}</span><div><div class="skat">${s.kategori||''}</div><div class="suyg">${s.uygulama||''}</div>${(s.miktar||s.zamanlama)?`<div class="sdet">${s.miktar?'📦 '+s.miktar:''}${s.miktar&&s.zamanlama?' · ':''}${s.zamanlama?'⏱ '+s.zamanlama:''}</div>`:''}</div></div>`;
+  });
+  const tg=document.getElementById(prefix+'-takvim');
+  const tak=d.mevsimsel_takvim||{};
+  tg.innerHTML=[{k:'ilkbahar',ico:'🌸',ad:'İlkbahar'},{k:'yaz',ico:'☀️',ad:'Yaz'},{k:'sonbahar',ico:'🍂',ad:'Sonbahar'},{k:'kis',ico:'❄️',ad:'Kış'}]
+    .map(m=>`<div class="takitem"><div class="takmo">${m.ico} ${m.ad}</div><div class="taktxt">${tak[m.k]||'—'}</div></div>`).join('');
+  const ex=document.getElementById(prefix+'-extra'); ex.innerHTML='';
+  if(d.yerel_kaynaklar) ex.innerHTML+=`<div class="rdesc" style="margin-top:12px;border-top:1px solid var(--brd);padding-top:11px"><strong style="color:var(--e1)">🪨 Yerel Kaynaklar:</strong><br>${d.yerel_kaynaklar}</div>`;
+  if(d.uyari) ex.innerHTML+=`<div style="background:var(--gbg);border:1px solid rgba(181,132,58,.19);border-radius:8px;padding:10px 12px;font-size:.82rem;margin-top:8px;color:#7a4f00">⚠️ <strong>Dikkat:</strong> ${d.uyari}</div>`;
+  const rc=document.getElementById(prefix+'-result'); rc.classList.add('show');
+  rc.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ══ YABANİ OT ══
+const otDz=document.getElementById('ot-dz'), otFi=document.getElementById('ot-fi');
+const otPw=document.getElementById('ot-prev-wrap'), otPi=document.getElementById('ot-prev-img');
+const otBtn=document.getElementById('ot-abtn');
+otDz.addEventListener('dragover',e=>{e.preventDefault();otDz.classList.add('over');});
+otDz.addEventListener('dragleave',()=>otDz.classList.remove('over'));
+otDz.addEventListener('drop',e=>{e.preventDefault();otDz.classList.remove('over');if(e.dataTransfer.files[0])loadOt(e.dataTransfer.files[0]);});
+otFi.addEventListener('change',()=>{if(otFi.files[0])loadOt(otFi.files[0]);});
+function loadOt(file){
+  if(!file.type.startsWith('image/')){showErr('ot-err','Geçerli görsel seçin.');return;}
+  hideErr('ot-err');
+  resizeEncode(file,(b64,dataUrl)=>{if(!b64)return; otImgB64=b64; otPi.src=dataUrl; otPw.style.display='block'; otBtn.disabled=false;});
+}
+document.getElementById('ot-rm').addEventListener('click',()=>{otImgB64=null;otFi.value='';otPw.style.display='none';otBtn.disabled=true;hideErr('ot-err');document.getElementById('ot-result').classList.remove('show');});
+otBtn.addEventListener('click',async()=>{
+  if(!otImgB64) return;
+  hideErr('ot-err'); otBtn.disabled=true;
+  document.getElementById('ot-result').classList.remove('show'); startLoader('ot');
+  try{
+    const body={imageBase64:otImgB64,mimeType:'image/jpeg',bahceTipi:document.getElementById('ot-bahce-tipi').value,sulama:document.getElementById('ot-sulama').value,toprakTipi:document.getElementById('ot-toprak').value};
+    const res=await apiFetch('/api/yabani-ot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error||'Hata '+res.status);}
+    const d=await res.json(); if(d.error) throw new Error(d.error);
+    stopLoader('ot'); renderOt(d);
+  }catch(e){stopLoader('ot');showErr('ot-err','Hata: '+e.message);}
+  otBtn.disabled=false;
+});
+function renderOt(d){
+  document.getElementById('ot-yogunluk-lbl').textContent=(d.yogunluk||'')+(d.acil_mi?' — ⚠️ ACİL':'');
+  document.getElementById('ot-yorum').textContent=d.genel_yorum||'';
+  const pct=d.yogunluk_yuzdesi;
+  const yr=document.getElementById('ot-yog-row');
+  if(pct!=null){yr.style.display='flex';document.getElementById('ot-yog-v').textContent=d.yogunluk||'';const yf=document.getElementById('ot-yog-f');yf.style.background=pct<=33?'linear-gradient(90deg,var(--grn),var(--grn2))':pct<=66?'linear-gradient(90deg,var(--g1),var(--g2))':'linear-gradient(90deg,#b54a10,var(--r2))';requestAnimationFrame(()=>setTimeout(()=>{yf.style.width=pct+'%';},80));}
+  else yr.style.display='none';
+  const cards=document.getElementById('ot-cards');
+  cards.innerHTML=(d.tespit_edilen_otlar||[]).map(o=>{const tc=(o.tehlike_seviyesi||'').toLowerCase().includes('yük')?'yuksek':(o.tehlike_seviyesi||'').toLowerCase().includes('orta')?'orta':'dusuk';return`<div class="weed-card"><div class="weed-name">${o.adi||'—'}</div><div class="weed-latin">${o.latince||''}</div><div class="weed-zarar">${o.zarar||''}</div><span class="weed-tehlike ${tc}">${o.tehlike_seviyesi||'—'} Risk</span></div>`;}).join('');
+  if(!cards.innerHTML) cards.innerHTML='<div class="hempty">Ot tespit edilmedi</div>';
+  document.getElementById('ot-kulturel').innerHTML=(d.kulturel_mucadele||[]).map(m=>`<li>${m}</li>`).join('');
+  document.getElementById('ot-biyolojik').innerHTML=(d.biyolojik_mucadele||[]).map(m=>`<li>${m}</li>`).join('');
+  document.getElementById('ot-kimyasal').innerHTML=(d.kimyasal_mucadele||[]).map(k=>`<div class="kim-card"><div class="kim-etken">🧪 ${k.etken_madde||'—'}</div><div class="kim-uyg">${k.uygulama||''}</div>${k.dikkat?`<div class="kim-dikkat">⚠️ ${k.dikkat}</div>`:''}</div>`).join('');
+  const tak=d.mevsimsel_takvim||{};
+  document.getElementById('ot-takvim').innerHTML=[{k:'ilkbahar',ico:'🌸',ad:'İlkbahar'},{k:'yaz',ico:'☀️',ad:'Yaz'},{k:'sonbahar',ico:'🍂',ad:'Sonbahar'},{k:'kis',ico:'❄️',ad:'Kış'}].map(m=>`<div class="takitem"><div class="takmo">${m.ico} ${m.ad}</div><div class="taktxt">${tak[m.k]||'—'}</div></div>`).join('');
+  document.getElementById('ot-oncelik').innerHTML=(d.oncelikli_adimlar||[]).map(a=>`<li>${a}</li>`).join('');
+  document.getElementById('ot-result').classList.add('show');
+  document.getElementById('ot-result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ══ HAVA DURUMU ══
+document.getElementById('hava-loc-btn').addEventListener('click',()=>{
+  const btn=document.getElementById('hava-loc-btn'); btn.disabled=true; btn.textContent='⏳';
+  getKonum((lat,lon)=>{
+    document.getElementById('hava-loc-title').textContent='✅ Konum alındı';
+    document.getElementById('hava-loc-sub').textContent=lat.toFixed(4)+'°K '+lon.toFixed(4)+'°D';
+    btn.textContent='🔄 Yenile'; btn.disabled=false;
+    fetchHava(lat,lon);
+  },'hava-err');
+});
+
+async function fetchHava(lat,lon){
+  document.getElementById('hava-result').classList.remove('show'); startLoader('hava');
+  document.getElementById('hava-loader').classList.add('show');
+  try{
+    const res=await apiFetch(`/api/hava?lat=${lat}&lon=${lon}`);
+    if(!res.ok) throw new Error('Hava verisi alınamadı.');
+    const d=await res.json(); if(d.error) throw new Error(d.error);
+    document.getElementById('hava-loader').classList.remove('show');
+    renderHava(d);
+  }catch(e){document.getElementById('hava-loader').classList.remove('show');showErr('hava-err','Hata: '+e.message);}
+}
+
+const wmoIco={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'⛈️',71:'❄️',73:'❄️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',85:'🌨️',86:'❄️',95:'⛈️',96:'⛈️',99:'⛈️'};
+const yonAd=d=>{if(d===null||d===undefined)return''; const y=['K','KD','D','GD','G','GB','B','KB']; return y[Math.round(d/45)%8]||'';};
+function renderHava(d){
+  const cur=d.anlik||{};
+  const ruzgarYon=yonAd(cur.ruzgarYon);
+  document.getElementById('hava-anlik-wrap').innerHTML=`
+    <div class="hava-anlik">
+      <div class="hava-ico">${wmoIco[cur.kod]||'🌡️'}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <div class="hava-temp">${cur.sicaklik}°C</div>
+          ${cur.hissedilen!==cur.sicaklik?`<div style="font-size:.85rem;opacity:.7">Hissedilen ${cur.hissedilen}°C</div>`:''}
+        </div>
+        <div class="hava-durum">${cur.durum||'—'}</div>
+        <div class="hava-detay">
+          <span class="hd-item">💧 %${cur.nem}</span>
+          <span class="hd-item">💨 ${cur.ruzgar}km/s ${ruzgarYon} ${cur.ruzgarHamle?'(hamle '+cur.ruzgarHamle+'km/s)':''}</span>
+          <span class="hd-item">🌧️ ${cur.yagis}mm</span>
+          ${cur.gorus!=null?`<span class="hd-item">👁️ ${cur.gorus}km</span>`:''}
+          ${cur.basinc?`<span class="hd-item">🔵 ${cur.basinc}hPa</span>`:''}
+          ${cur.bulutluluk!=null?`<span class="hd-item">☁️ %${cur.bulutluluk}</span>`:''}
+        </div>
+        ${d.meta?`<div style="font-size:.65rem;opacity:.45;margin-top:6px">Kaynak: ${d.meta.kaynak} · ${d.meta.guncelleme}</div>`:''}
+      </div>
+    </div>`;
+  // 16 günlük tahmin
+  const tg=document.getElementById('tahmin-grid');
+  tg.innerHTML=(d.tahmin||[]).slice(0,16).map(t=>`
+    <div class="tahmin-kart">
+      <div class="tk-gun">${t.gun}</div>
+      <div style="font-size:.62rem;color:rgba(26,18,9,.35);margin-bottom:3px">${t.tarihFmt||''}</div>
+      <div class="tk-ico">${wmoIco[t.kod]||'🌡️'}</div>
+      <div class="tk-max">${t.maxTemp}°</div>
+      <div class="tk-min">${t.minTemp}°</div>
+      ${t.yagis>0?`<div class="tk-yagis">💧 ${t.yagis}mm${t.yagisOlasiligi!=null?' %'+t.yagisOlasiligi:''}</div>`:''}
+      ${t.ruzgar>20?`<div style="font-size:.63rem;color:#b54a10;margin-top:1px">💨 ${t.ruzgar}</div>`:''}
+      ${t.uvMax>=6?`<div style="font-size:.63rem;color:#e67e22;margin-top:1px">UV ${t.uvMax}</div>`:''}
+    </div>`).join('');
+  // Tarımsal yorum + ilaçlama tablo
+  const yorumWrap=document.getElementById('hava-yorum-wrap');
+  if(d.genelYorum||d.uyarilar?.length){
+    yorumWrap.style.display='block';
+    document.getElementById('hava-genel-yorum').textContent=d.genelYorum||'';
+    const tbody=document.querySelector('#ilaclama-tablo tbody');
+    if(tbody && d.ilaclamaTakvim){
+      tbody.innerHTML=d.ilaclamaTakvim.map(t=>`
+        <tr>
+          <td>${t.gun}</td>
+          <td style="opacity:.75">${t.tarih||''}</td>
+          <td class="${t.uygun?'il-uygun':'il-yasak'}">${t.uygun?'✅ Uygun':'❌ '+(t.sebep||'Uygun değil')}</td>
+        </tr>`).join('');
+    }
+  } else yorumWrap.style.display='none';
+  const uyariWrap=document.getElementById('hava-uyari-wrap');
+  if(d.uyarilar&&d.uyarilar.length){
+    uyariWrap.style.display='block';
+    document.getElementById('uyari-listesi').innerHTML=d.uyarilar.map(u=>`<div class="uyari-item"><span>⚠️</span><span>${u}</span></div>`).join('');
+  } else uyariWrap.style.display='none';
+  document.getElementById('hava-result').classList.add('show');
+}
+
+// ══ TAKVİM ══
+document.getElementById('tak-btn').addEventListener('click',async()=>{
+  document.getElementById('tak-result').classList.remove('show'); startLoader('tak');
+  hideErr('tak-err');
+  try{
+    const meyvelerStr=document.getElementById('tak-meyveler').value;
+    const meyveler=meyvelerStr?meyvelerStr.split(',').map(m=>m.trim()):[];
+    const body={meyveler,bolge:document.getElementById('tak-bolge').value,yil:document.getElementById('tak-yil').value,sulama:document.getElementById('tak-sulama').value,toprakBilgi:document.getElementById('tak-toprak').value};
+    const res=await apiFetch('/api/takvim-olustur',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error||'Hata '+res.status);}
+    const d=await res.json(); if(d.error) throw new Error(d.error);
+    stopLoader('tak'); renderTakvim(d);
+  }catch(e){stopLoader('tak');showErr('tak-err','Hata: '+e.message);}
+});
+function renderTakvim(d){
+  document.getElementById('tak-notlar').textContent=d.genel_notlar||'';
+  const kritikEl=document.getElementById('tak-kritik');
+  if(d.kritik_tarihler&&d.kritik_tarihler.length){
+    kritikEl.innerHTML='<div style="background:var(--rlt);border:1px solid rgba(192,57,43,.2);border-radius:8px;padding:11px 13px;margin-bottom:13px"><div style="font-weight:600;font-size:.8rem;color:var(--r1);margin-bottom:6px">🔴 Kritik Tarihler</div>'+d.kritik_tarihler.map(t=>`<div style="font-size:.82rem;color:rgba(26,18,9,.68);margin-bottom:3px">• ${t}</div>`).join('')+'</div>';
+  } else kritikEl.innerHTML='';
+  const isBadgeMap={'Budama':'budama','Sulama':'sulama','İlaçlama':'ilaclama','Gübreleme':'gubleme','Hasat':'hasat'};
+  const tg=document.getElementById('takvim-grid');
+  tg.innerHTML=(d.takvim||[]).map(ay=>`
+    <div class="ay-kart">
+      <div class="ay-head"><span class="ay-isim">${ay.ayAdi||('Ay '+ay.ay)}</span><span style="font-size:.72rem;color:rgba(26,18,9,.3)">${ay.ay}. ay</span></div>
+      <div class="ay-body">
+        ${(ay.isler||[]).map(is=>{
+          const badgeCls=Object.entries(isBadgeMap).find(([k])=>is.kategori&&is.kategori.includes(k))?.[1]||'diger';
+          return`<div class="takvim-is"><span class="is-badge ${badgeCls}">${is.kategori||'İş'}</span><span style="font-size:.79rem;color:rgba(26,18,9,.68)">${is.is||''}</span></div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+  document.getElementById('tak-result').classList.add('show');
+  document.getElementById('tak-result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ══ HARİTA ══
+function initHarita(){
+  if(haritaMap) return;
+  if(typeof L === 'undefined') { console.warn('Leaflet yüklenmedi'); return; }
+  var haritaEl = document.getElementById('bahce-harita');
+  if(!haritaEl) return;
+  try {
+  // Katmanları burada oluştur (L hazır olunca)
+  KATMANLAR = {
+    normal: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:21,subdomains:'abc'}),
+    uydu:   L.tileLayer('https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{attribution:'© Google',maxZoom:21,subdomains:'0123'}),
+    hibrit: L.tileLayer('https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',{attribution:'© Google',maxZoom:21,subdomains:'0123'}),
+  };
+  haritaMap=L.map('bahce-harita').setView([37.5,35],6);
+  katmanDegistir('hibrit'); // varsayılan: Google hibrit
+  bahceLayer = L.layerGroup().addTo(haritaMap);
+  haritaMap.on('click',e=>{
+    if(!ekleMode) return;
+    pendingLatLng=e.latlng;
+    document.getElementById('agac-lat-inp').value=e.latlng.lat.toFixed(5);
+    document.getElementById('agac-lon-inp').value=e.latlng.lng.toFixed(5);
+    document.getElementById('bahce-modal-baslik').textContent='🏡 Bahçe Ekle';
+    document.getElementById('agac-kaydet-btn').textContent='🏡 Bahçeyi Kaydet';
+    delete document.getElementById('agac-kaydet-btn').dataset.editId;
+    ['agac-adi','agac-meyve','agac-not'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('agac-yil').value='';
+    document.getElementById('agac-modal').classList.add('show');
+  });
+  loadAgaclar();
+  } catch(e){ console.error('Harita hatası:',e); }
+}
+
+document.getElementById('harita-ekle-btn').addEventListener('click',()=>{
+  ekleMode=!ekleMode;
+  document.getElementById('harita-ekle-btn').classList.toggle('active',ekleMode);
+  document.getElementById('harita-ekle-btn').textContent=ekleMode?'🏡 Bahçe Ekle (Aktif)':'🏡 Bahçe Ekle';
+});
+document.getElementById('harita-konum-btn').addEventListener('click',()=>{
+  if(locLat) haritaMap.setView([locLat,locLon],15);
+  else getKonum((lat,lon)=>haritaMap.setView([lat,lon],15),'');
+});
+document.getElementById('agac-modal-close').addEventListener('click',()=>{
+  document.getElementById('agac-modal').classList.remove('show'); pendingLatLng=null;
+  document.getElementById('bahce-modal-baslik').textContent='🏡 Bahçe Ekle';
+  document.getElementById('agac-kaydet-btn').textContent='🏡 Bahçeyi Kaydet';
+  delete document.getElementById('agac-kaydet-btn').dataset.editId;
+});
+document.getElementById('agac-kaydet-btn').addEventListener('click',async()=>{
+  if(!pendingLatLng) return;
+  const manuelLat=parseFloat(document.getElementById('agac-lat-inp').value);
+  const manuelLon=parseFloat(document.getElementById('agac-lon-inp').value);
+  const finalLat = (manuelLat&&manuelLon) ? manuelLat : (pendingLatLng?pendingLatLng.lat:null);
+  const finalLon = (manuelLat&&manuelLon) ? manuelLon : (pendingLatLng?pendingLatLng.lng:null);
+  if(!finalLat||!finalLon){alert('Lütfen koordinat girin veya haritaya tıklayın.');return;}
+  const body={adi:document.getElementById('agac-adi').value||'Bahce',meyve:document.getElementById('agac-meyve').value,yil:document.getElementById('agac-yil').value,durum:document.getElementById('agac-durum').value,notlar:document.getElementById('agac-not').value,lat:finalLat,lon:finalLon};
+  const editId=document.getElementById('agac-kaydet-btn').dataset.editId;
+  try{
+    if(editId){
+      await apiFetch('/api/agaclar/'+editId,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    } else {
+      await apiFetch('/api/agaclar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }
+    document.getElementById('bahce-modal-baslik').textContent='🏡 Bahçe Ekle';
+    document.getElementById('agac-kaydet-btn').textContent='🏡 Bahçeyi Kaydet';
+    delete document.getElementById('agac-kaydet-btn').dataset.editId;
+    document.getElementById('agac-modal').classList.remove('show');
+    pendingLatLng=null; loadAgaclar();
+  }catch(e){alert('Kayit hatasi: '+e.message);}
+});
+
+const durumRenk={saglikli:'#2d5a27',takip:'#b5843a',hasta:'#c0392b'};
+async function loadAgaclar(){
+  try{
+    const res=await apiFetch('/api/agaclar');
+    const agaclar=await res.json();
+    document.getElementById('harita-agac-sayisi').textContent=agaclar.length+' bahce';
+    if(haritaMap){
+      if(bahceLayer) bahceLayer.clearLayers(); else { bahceLayer=L.layerGroup().addTo(haritaMap); }
+      agaclar.forEach(a=>{
+        if(!a.lat||!a.lon) return;
+        const renk=durumRenk[a.durum]||'#2d5a27';
+        const marker=L.circleMarker([a.lat,a.lon],{radius:11,fillColor:renk,color:'#fff',weight:2.5,fillOpacity:.93}).addTo(bahceLayer);
+        const phtml='<div style="min-width:165px;font-family:sans-serif">'
+          +'<div style="font-weight:700;font-size:.9rem;margin-bottom:4px">'+a.adi+'</div>'
+          +(a.meyve?'<div style="font-size:.78rem;color:#555;margin-bottom:2px">'+a.meyve+'</div>':'')
+          +(a.yil?'<div style="font-size:.78rem;color:#555;margin-bottom:4px">'+a.yil+' agac'+' | '+(a.durum||'')+'</div>':'')
+          +(a.notlar?'<div style="font-size:.74rem;color:#777;margin-bottom:6px">'+a.notlar+'</div>':'')
+          +'<div style="display:flex;gap:5px;margin-top:5px">'
+          +'<button onclick="duzenleBahce(\''+a.id+'\')" style="flex:1;padding:4px;background:#1a5c8b;color:#fff;border:none;border-radius:5px;font-size:.72rem;cursor:pointer">✏ Duzenle</button>'
+          +'<button onclick="silAgac(\''+a.id+'\')" style="flex:1;padding:4px;background:#c0392b;color:#fff;border:none;border-radius:5px;font-size:.72rem;cursor:pointer">🗑 Sil</button>'
+          +'</div></div>';
+        marker.bindPopup(phtml);
+      });
+    }
+    const liste=document.getElementById('agac-listesi');
+    const meyvIco={seftali:'🍑',nektarin:'🍊',nar:'🌿',hurma:'🟤',kiraz:'🍒',elma:'🍎',armut:'🍐',zeytin:'🫒'};
+    const ico=meyve=>{const k=Object.keys(meyvIco).find(k=>meyve&&meyve.toLowerCase().includes(k));return meyvIco[k]||'🏡';};
+    liste.innerHTML=agaclar.length?agaclar.map(a=>`
+      <div class="agac-kart">
+        <span class="agac-ico">${ico(a.meyve)}</span>
+        <div class="agac-info">
+          <div class="agac-adi">${a.adi}</div>
+          <div class="agac-detay">${a.meyve||''}${a.yil?' | '+a.yil+' agac':''}<br>${a.notlar||''}</div>
+          <div style="display:flex;gap:5px;margin-top:7px">
+            <button class="agac-sil" style="background:var(--bbg);color:var(--b1);border-color:rgba(26,92,139,.25)" onclick="duzenleBahce('${a.id}')">✏ Duzenle</button>
+            <button class="agac-sil" onclick="silAgac('${a.id}')">🗑 Sil</button>
+          </div>
+        </div>
+      </div>`).join(''):'<div class="hempty">Haritaya tikla veya koordinat girerek bahce ekle</div>';
+  }catch(e){console.error(e);}
+}
+async function duzenleBahce(id){
+  try{
+    const res=await apiFetch('/api/agaclar');
+    const agaclar=await res.json();
+    const a=agaclar.find(x=>String(x.id)===String(id));
+    if(!a) return;
+    document.getElementById('agac-adi').value=a.adi||'';
+    document.getElementById('agac-meyve').value=a.meyve||'';
+    document.getElementById('agac-yil').value=a.yil||'';
+    document.getElementById('agac-durum').value=a.durum||'saglikli';
+    document.getElementById('agac-not').value=a.notlar||'';
+    document.getElementById('agac-lat-inp').value=a.lat||'';
+    document.getElementById('agac-lon-inp').value=a.lon||'';
+    document.getElementById('bahce-modal-baslik').textContent='✏️ Bahçeyi Düzenle';
+    document.getElementById('agac-kaydet-btn').textContent='💾 Değişiklikleri Kaydet';
+    document.getElementById('agac-kaydet-btn').dataset.editId=id;
+    pendingLatLng={lat:a.lat,lng:a.lon};
+    document.getElementById('agac-modal').classList.add('show');
+  }catch(e){alert('Yuklenemedi: '+e.message);}
+}
+async function silAgac(id){
+  if(!confirm('Bu bahceyi silmek istediginizden emin misiniz?')) return;
+  await apiFetch('/api/agaclar/'+id,{method:'DELETE'}); loadAgaclar();
+}
+
+// ══ VERİM ══
+document.getElementById('v-btn').addEventListener('click',async()=>{
+  const meyve=document.getElementById('v-meyve').value;
+  if(!meyve){showErr('v-err','Meyve türü girin.');return;}
+  const body={meyve,yil:parseInt(document.getElementById('v-yil').value),gerceklesen:parseFloat(document.getElementById('v-gercek').value)||0,hedef:parseFloat(document.getElementById('v-hedef').value)||0,agac_sayisi:parseInt(document.getElementById('v-agac').value)||0,fiyat:parseFloat(document.getElementById('v-fiyat').value)||0,notlar:document.getElementById('v-not').value};
+  try{
+    await apiFetch('/api/verim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    loadVerim();
+    document.getElementById('v-btn').textContent='✅ Kaydedildi!';
+    setTimeout(()=>document.getElementById('v-btn').textContent='📈 Verim Kaydını Ekle',2000);
+  }catch(e){showErr('v-err','Hata: '+e.message);}
+});
+
+async function loadVerim(){
+  try{
+    const res=await apiFetch('/api/verim');
+    const verimler=await res.json();
+    const liste=document.getElementById('verim-listesi');
+    if(!verimler.length){liste.innerHTML='<div class="hempty">Henüz verim kaydı yok</div>';return;}
+    liste.innerHTML=verimler.map(v=>{
+      const pct=v.hedef?Math.min(100,Math.round(v.gerceklesen/v.hedef*100)):0;
+      const gelir=v.gerceklesen&&v.fiyat?(v.gerceklesen*v.fiyat).toLocaleString('tr-TR'):null;
+      return`<div class="verim-kart">
+        <button class="verim-sil" onclick="silVerim('${v.id}')">🗑</button>
+        <div class="verim-meyve">${v.meyve}</div>
+        <div class="verim-yil">${v.yil}${v.agac_sayisi?' · '+v.agac_sayisi+' ağaç':''}</div>
+        <div class="verim-bar-wrap"><div class="verim-bar-bg"><div class="verim-bar-fill" style="width:${pct}%"></div></div><span class="verim-kg">${v.gerceklesen} kg/da</span></div>
+        <div class="verim-hedef">${v.hedef?'Hedef: '+v.hedef+' kg/da · '+pct+'%':''}${gelir?' · Est. Gelir: '+gelir+' ₺':''}</div>
+        ${v.notlar?`<div style="font-size:.75rem;color:rgba(26,18,9,.45);margin-top:5px">${v.notlar}</div>`:''}
+      </div>`;
+    }).join('');
+  }catch(e){console.error(e);}
+}
+async function silVerim(id){
+  await apiFetch('/api/verim/'+id,{method:'DELETE'}); loadVerim();
+}
+
+// ══ ARŞİV ══
+async function loadArsiv(){
+  try{
+    const res=await apiFetch('/api/arsiv'); const data=await res.json();
+    const analizler=data.analizler||[];
+    const filYil=document.getElementById('fil-yil').value;
+    const filMev=document.getElementById('fil-mevsim').value;
+    const filBahce=document.getElementById('fil-bahce').value;
+    const yillar=[...new Set(analizler.map(a=>a.yil))].sort((a,b)=>b-a);
+    const bahceler=[...new Set(analizler.map(a=>a.bahceAdi).filter(Boolean))];
+    const fy=document.getElementById('fil-yil'); fy.innerHTML='<option value="">Tüm Yıllar</option>'+yillar.map(y=>`<option value="${y}"${filYil==y?' selected':''}>${y}</option>`).join('');
+    const fb=document.getElementById('fil-bahce'); fb.innerHTML='<option value="">Tüm Bahçeler</option>'+bahceler.map(b=>`<option value="${b}"${filBahce===b?' selected':''}>${b}</option>`).join('');
+    let filtered=analizler;
+    if(filYil) filtered=filtered.filter(a=>String(a.yil)===String(filYil));
+    if(filMev) filtered=filtered.filter(a=>(a.mevsim||'').includes(filMev));
+    if(filBahce) filtered=filtered.filter(a=>a.bahceAdi===filBahce);
+    document.getElementById('arsiv-count').textContent=filtered.length+' kayıt';
+    const grid=document.getElementById('arsiv-grid');
+    if(!filtered.length){grid.innerHTML='<div class="hempty" style="grid-column:1/-1">Kayıt bulunamadı</div>';updateCompare([]);return;}
+    const mevIco={'ilkbahar':'🌸','yaz':'☀️','sonbahar':'🍂','kış':'❄️'};
+    grid.innerHTML=filtered.map(a=>{
+      const puan=a.genel_puan||0; const sc=puan>=70?'var(--grn2)':puan>=45?'var(--g1)':'var(--r2)';
+      const mev=(a.mevsim||'').toLowerCase();
+      const ico=Object.entries(mevIco).find(([k])=>mev.includes(k))?.[1]||'📋';
+      const tarih=new Date(a.tarih).toLocaleDateString('tr-TR');
+      const isSel=selectedForCompare.includes(a.id);
+      return`<div class="ars-card${isSel?' selected':''}" id="ac-${a.id}">
+        <div class="ars-head"><span class="ars-mevsim">${ico} ${a.mevsim||'—'}</span><span class="ars-yil">${a.yil}</span></div>
+        <div class="ars-body">
+          <div class="ars-bahce">${a.bahceAdi||'Bahçe'}</div>
+          <div class="ars-bolge">${a.bolge_adi||''}</div>
+          <div class="ars-score-row"><div class="ars-score-num" style="color:${sc}">${puan}</div><div class="ars-score-bar"><div style="width:${puan}%;background:${sc};height:100%;border-radius:99px"></div></div><span style="font-size:.69rem;opacity:.38">/100</span></div>
+          <div class="ars-meta"><span>pH ${a.ph_mevcut||'?'}</span><span>${a.organik_madde||'?'}</span><span>${tarih}</span></div>
+          <div class="ars-actions">
+            <button class="ars-btn" onclick="showDetail('${a.id}')">📋</button>
+            <button class="ars-btn" onclick="toggleCompare('${a.id}')">${isSel?'✓':'⚖️'}</button>
+            <button class="ars-btn del" onclick="deleteArsiv('${a.id}')">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    updateCompare(filtered);
+  }catch(e){document.getElementById('arsiv-grid').innerHTML=`<div class="hempty" style="grid-column:1/-1;color:var(--r2)">Sunucu bağlantısı yok</div>`;}
+}
+function toggleCompare(id){
+  const numId=parseInt(id)||id; const idx=selectedForCompare.indexOf(numId);
+  if(idx>=0) selectedForCompare.splice(idx,1);
+  else if(selectedForCompare.length<4) selectedForCompare.push(numId);
+  else{alert('En fazla 4 analiz');return;}
+  loadArsiv();
+}
+async function updateCompare(filtered){
+  const panel=document.getElementById('compare-panel');
+  if(selectedForCompare.length<2){panel.classList.remove('show');return;}
+  const sec=filtered.filter(a=>selectedForCompare.includes(a.id));
+  if(sec.length<2){panel.classList.remove('show');return;}
+  panel.classList.add('show');
+  document.getElementById('cp-label').textContent='('+sec.map(a=>`${a.bahceAdi||'Bahçe'} ${a.mevsim||''} ${a.yil}`).join(' vs ')+')';
+  const cols=sec.map(a=>`<th>${a.bahceAdi||'Bahçe'}<br><small style="font-weight:400;opacity:.55">${a.mevsim||''} ${a.yil}</small></th>`).join('');
+  const rows=[{lbl:'🏆 Puan',fn:a=>a.genel_puan||0,num:true},{lbl:'⚗️ pH',fn:a=>a.ph_mevcut||'?',num:false},{lbl:'🌿 Organik',fn:a=>a.organik_madde||'?',num:false},{lbl:'💧 Drenaj',fn:a=>a.drenaj||'?',num:false},{lbl:'🌊 Tuzluluk',fn:a=>a.tuzluluk_riski||'?',num:false}]
+    .map(r=>{const vals=sec.map(r.fn);const maxV=r.num?Math.max(...vals.map(Number)):null;const minV=r.num?Math.min(...vals.map(Number)):null;const cells=vals.map(v=>{const n=Number(v);const cls=r.num?(n===maxV?'cp-better':n===minV?'cp-worse':''):'';return`<td class="${cls}">${v}</td>`;}).join('');return`<tr><td class="row-label">${r.lbl}</td>${cells}</tr>`;}).join('');
+  document.getElementById('cp-table').innerHTML=`<thead><tr><th>Parametre</th>${cols}</tr></thead><tbody>${rows}</tbody>`;
+}
+async function deleteArsiv(id){
+  if(!confirm('Bu analizi silmek istediğinizden emin misiniz?')) return;
+  await apiFetch('/api/arsiv/'+id,{method:'DELETE'}); selectedForCompare=selectedForCompare.filter(x=>x!=id&&x!=parseInt(id)); loadArsiv();
+}
+async function showDetail(id){
+  try{
+    const res=await apiFetch('/api/arsiv/'+id); const kayit=await res.json(); const d=kayit.sonuc||{};
+    document.getElementById('modal-title').textContent=(kayit.bahceAdi||'Bahçe')+' — '+kayit.mevsim+' '+kayit.yil;
+    document.getElementById('modal-body').innerHTML=`
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:13px;flex-wrap:wrap">
+        <div style="font-family:Fraunces,serif;font-size:1.8rem;font-weight:700;color:${(d.genel_puan||0)>=70?'var(--grn2)':(d.genel_puan||0)>=45?'var(--g1)':'var(--r2)'}">${d.genel_puan||'—'}<span style="font-size:.73rem;opacity:.38">/100</span></div>
+        <div><div style="font-weight:500">${d.bolge_adi||''} — ${d.toprak_tipi||''}</div><div style="font-size:.74rem;color:rgba(26,18,9,.38)">${d.iklim_tipi||''} | ${d.yillik_yagis||''}</div></div>
+      </div>
+      <p style="font-size:.84rem;line-height:1.7;color:rgba(26,18,9,.66);margin-bottom:12px">${d.genel_yorum||''}</p>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">${[['pH',d.ph_mevcut,'spwarn'],['Organik',d.organik_madde,'spwarn'],['Drenaj',d.drenaj,'spwarn'],['Tuzluluk',d.tuzluluk_riski,'spwarn']].map(([l,v,c])=>`<span class="spb ${c}">${l}: ${v||'?'}</span>`).join('')}</div>
+      ${(d.eksik_besinler||[]).length?'<div style="font-weight:500;font-size:.76rem;margin-bottom:6px;color:var(--e1)">🧪 Eksik Besinler</div>'+d.eksik_besinler.map(n=>`<div style="background:var(--warm);border:1px solid var(--brd);border-radius:6px;padding:8px;margin-bottom:5px;font-size:.8rem"><strong>${n.besin}</strong>: ${n.oneri}</div>`).join(''):''}
+      ${(d.iyilestirme_adimlari||[]).length?'<div style="font-weight:500;font-size:.76rem;margin:10px 0 6px;color:var(--e1)">🔧 İyileştirme</div>'+d.iyilestirme_adimlari.map(s=>`<div style="background:var(--warm);border:1px solid var(--brd);border-radius:6px;padding:8px;margin-bottom:5px;font-size:.8rem"><strong>${s.kategori}</strong> <span style="opacity:.4;font-size:.68rem">${s.oncelik}</span><br>${s.uygulama}</div>`).join(''):''}
+      <div style="font-size:.71rem;color:rgba(26,18,9,.26);margin-top:12px;font-style:italic">Analiz: ${new Date(kayit.tarih).toLocaleString('tr-TR')}</div>`;
+    document.getElementById('modal-overlay').classList.add('show');
+  }catch(e){alert('Detay yüklenemedi: '+e.message);}
+}
+['fil-yil','fil-mevsim','fil-bahce'].forEach(id=>document.getElementById(id).addEventListener('change',loadArsiv));
+
+// ══ RAPOR ══
+document.getElementById('rapor-btn').addEventListener('click',async()=>{
+  const yil=parseInt(document.getElementById('rapor-yil').value);
+  try{
+    const res=await apiFetch(`/api/rapor/${yil}`); const d=await res.json();
+    document.getElementById('rapor-baslik').textContent=`📑 ${yil} Yılı Bahçe Raporu`;
+    const toplam_verim=d.verimler.reduce((s,v)=>s+v.gerceklesen,0);
+    const toplam_gelir=d.verimler.reduce((s,v)=>s+(v.gerceklesen*v.fiyat||0),0);
+    document.getElementById('rapor-ozet').innerHTML=[
+      {num:d.analizler.length,lbl:'Toprak Analizi'},{num:d.tedaviler.length,lbl:'Tedavi Kaydı'},
+      {num:d.verimler.length,lbl:'Verim Kaydı'},{num:d.agaclar.length,lbl:'Kayıtlı Ağaç'},
+      {num:toplam_verim+' kg/da',lbl:'Toplam Verim'},{num:toplam_gelir?toplam_gelir.toLocaleString('tr-TR')+' ₺':'—',lbl:'Tahmini Gelir'},
+    ].map(s=>`<div class="rapor-stat"><div class="rs-sayi">${s.num}</div><div class="rs-lbl">${s.lbl}</div></div>`).join('');
+    document.getElementById('rapor-analizler').innerHTML=d.analizler.length?d.analizler.map(a=>`<div style="background:var(--warm);border:1px solid var(--brd);border-radius:8px;padding:11px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div><div style="font-weight:500;font-size:.88rem">${a.bahceAdi||'Bahçe'} — ${a.mevsim}</div><div style="font-size:.74rem;color:rgba(26,18,9,.38)">${a.bolge_adi||''}</div></div><div style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:700;color:${(a.genel_puan||0)>=70?'var(--grn2)':(a.genel_puan||0)>=45?'var(--g1)':'var(--r2)'}">${a.genel_puan||'—'}<span style="font-size:.7rem;opacity:.4">/100</span></div></div>`).join(''):'<div class="hempty">Bu yıl toprak analizi yok</div>';
+    document.getElementById('rapor-verim').innerHTML=d.verimler.length?d.verimler.map(v=>`<div style="background:var(--warm);border:1px solid var(--brd);border-radius:8px;padding:11px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div><div style="font-weight:500;font-size:.88rem">${v.meyve}</div><div style="font-size:.74rem;color:rgba(26,18,9,.38)">${v.agac_sayisi?v.agac_sayisi+' ağaç · ':''}</div></div><div style="text-align:right"><div style="font-family:Fraunces,serif;font-size:1.1rem;font-weight:700;color:var(--grn)">${v.gerceklesen} kg/da</div><div style="font-size:.72rem;color:rgba(26,18,9,.36)">${v.hedef?'Hedef: '+v.hedef:''}</div></div></div>`).join(''):'<div class="hempty">Bu yıl verim kaydı yok</div>';
+    document.getElementById('rapor-tedavi').innerHTML=d.tedaviler.length?d.tedaviler.map(t=>`<div style="background:var(--warm);border:1px solid var(--brd);border-radius:8px;padding:10px;margin-bottom:6px;font-size:.83rem"><strong>${t.ilac||'—'}</strong>${t.doz?' · '+t.doz:''}<br><span style="font-size:.72rem;color:rgba(26,18,9,.38)">${new Date(t.uygulama_tarihi).toLocaleDateString('tr-TR')}${t.notlar?' · '+t.notlar:''}</span></div>`).join(''):'<div class="hempty">Bu yıl tedavi kaydı yok</div>';
+    document.getElementById('rapor-result').classList.add('show');
+    document.getElementById('rapor-yazdir-btn').style.display='block';
+    document.getElementById('rapor-result').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){showErr('rapor-err','Sunucu bağlantısı yok. node server.js çalışıyor mu? Hata: '+e.message);}
+});
+document.getElementById('rapor-yazdir-btn').addEventListener('click',()=>window.print());
+
+// ══ GEÇMİŞ ══
+function addImgHist(src,label){
+  imgHist.unshift({src:src,label:(label||'').substring(0,15), tarih:new Date().toLocaleDateString('tr-TR')});
+  if(imgHist.length>20) imgHist.pop();
+  try{ localStorage.setItem('bahce_img_hist', JSON.stringify(imgHist)); }catch{}
+  const g=document.getElementById('hgrid');
+  if(g) g.innerHTML=imgHist.map(h=>`<div class="hthumb" title="${h.tarih||''}"><img src="${h.src}" alt=""><div class="hbadge">${h.label||''}</div></div>`).join('');
+}
+async function loadTedaviGecmis(){
+  try{
+    const res=await apiFetch('/api/tedavi'); const tedaviler=await res.json();
+    const el=document.getElementById('tedavi-gecmis');
+    el.innerHTML=tedaviler.length?tedaviler.map(t=>`
+      <div style="background:#fff;border:1px solid var(--brd);border-radius:9px;padding:12px;margin-bottom:8px;box-shadow:var(--shd);display:flex;gap:10px;align-items:flex-start">
+        <span style="font-size:1.3rem;flex-shrink:0">💊</span>
+        <div style="flex:1">
+          <div style="font-weight:500;font-size:.86rem">${t.ilac||'—'}</div>
+          <div style="font-size:.75rem;color:rgba(26,18,9,.4)">${new Date(t.uygulama_tarihi).toLocaleDateString('tr-TR')}${t.doz?' · '+t.doz:''}${t.notlar?' · '+t.notlar:''}</div>
+        </div>
+      </div>`).join(''):'<div class="hempty">Henüz tedavi kaydı yok</div>';
+  }catch(e){}
+}
+
+// ══ MODAL CLOSE ══
+
+// ══ GEOCODİNG (Nominatim + koordinat) ══
+async function koordAra(query, sonucElId, onSecim) {
+  const el = document.getElementById(sonucElId);
+  if (!query.trim()) { el.style.display='none'; return; }
+  // Koordinat girişi mi? 38.4, 27.1 veya 38.4 27.1
+  const krdMatch = query.match(/(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)/);
+  if (krdMatch) {
+    const lat=parseFloat(krdMatch[1]), lon=parseFloat(krdMatch[2]);
+    if (lat>=-90&&lat<=90&&lon>=-180&&lon<=180) {
+      el.innerHTML=`<div class="loc-sonuc-item" onclick="(function(){${onSecim.replace(/LAT/g,lat).replace(/LON/g,lon).replace(/ADI/g,`'${lat.toFixed(4)}°K ${lon.toFixed(4)}°D'`)}; document.getElementById('${sonucElId}').style.display='none'})()"><span class="lsi-ico">📍</span><div class="lsi-txt">Koordinat: ${lat.toFixed(4)}°K, ${lon.toFixed(4)}°D<div class="lsi-krd">${lat}, ${lon}</div></div></div>`;
+      el.style.display='block'; return;
+    }
+  }
+  try {
+    const res = await apiFetch(`/api/geocode?q=${encodeURIComponent(query)}`);
+    const sonuclar = await res.json();
+    if (!sonuclar.length) { el.innerHTML='<div class="loc-sonuc-item" style="color:rgba(26,18,9,.4);cursor:default">Sonuç bulunamadı</div>'; el.style.display='block'; return; }
+    el.innerHTML = sonuclar.map(s => {
+      const lat=s.lat.toFixed(4), lon=s.lon.toFixed(4);
+      const kisa = s.ad.split(',').slice(0,3).join(',');
+      const js = onSecim.replace(/LAT/g,s.lat).replace(/LON/g,s.lon).replace(/ADI/g,`'${kisa}'`);
+      return `<div class="loc-sonuc-item" onclick="(function(){${js}; document.getElementById('${sonucElId}').style.display='none'})()"><span class="lsi-ico">📍</span><div class="lsi-txt">${kisa}<div class="lsi-krd">${lat}°K, ${lon}°D</div></div></div>`;
+    }).join('');
+    el.style.display='block';
+  } catch { el.style.display='none'; }
+}
+
+// ── Toprak konum arama ──
+document.getElementById('loc-ara-btn').addEventListener('click', () => {
+  koordAra(document.getElementById('loc-ara').value, 'loc-sonuclar',
+    `locLat=LAT; locLon=LON; document.getElementById('loc-title').textContent='✅ Konum seçildi'; document.getElementById('loc-coords').textContent=ADI+' — '+LAT.toFixed?LAT.toFixed(5)+'°K '+LON.toFixed(5)+'°D':''; document.getElementById('t-abtn').disabled=false;`
+  );
+});
+document.getElementById('loc-ara').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('loc-ara-btn').click(); });
+document.addEventListener('click', e => { if(!e.target.closest('#loc-sonuclar')&&!e.target.closest('#loc-ara')&&!e.target.closest('#loc-ara-btn')) document.getElementById('loc-sonuclar').style.display='none'; });
+
+// ── Hava konum arama ──
+document.getElementById('hava-ara-btn').addEventListener('click', () => {
+  koordAra(document.getElementById('hava-ara').value, 'hava-sonuclar',
+    `locLat=LAT; locLon=LON; document.getElementById('hava-loc-title').textContent='✅ '+ADI; document.getElementById('hava-loc-sub').textContent=LAT.toFixed?LAT.toFixed(4)+'°K '+LON.toFixed(4)+'°D':''; fetchHava(LAT,LON);`
+  );
+});
+document.getElementById('hava-ara').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('hava-ara-btn').click(); });
+document.addEventListener('click', e => { if(!e.target.closest('#hava-sonuclar')&&!e.target.closest('#hava-ara')&&!e.target.closest('#hava-ara-btn')) document.getElementById('hava-sonuclar').style.display='none'; });
+
+// ── Harita konum arama ──
+document.getElementById('harita-ara-btn').addEventListener('click', () => {
+  koordAra(document.getElementById('harita-ara').value, 'harita-sonuclar',
+    `if(haritaMap){haritaMap.setView([LAT,LON],15); L.marker([LAT,LON]).addTo(haritaMap).bindPopup(ADI).openPopup();}`
+  );
+});
+document.getElementById('harita-ara').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('harita-ara-btn').click(); });
+document.addEventListener('click', e => { if(!e.target.closest('#harita-sonuclar')&&!e.target.closest('#harita-ara')&&!e.target.closest('#harita-ara-btn')) { const el=document.getElementById('harita-sonuclar'); if(el) el.style.display='none'; } });
+
+// ══ HARİTA KATMAN (Google Maps uydu / hibrit / normal) ══
+let katmanMevcut = null;
+let KATMANLAR = null; // initHarita'da oluşturulur
+
+function katmanDegistir(tip) {
+  if (!haritaMap || !KATMANLAR) return;
+  if (katmanMevcut) haritaMap.removeLayer(katmanMevcut);
+  katmanMevcut = KATMANLAR[tip] || KATMANLAR.hibrit;
+  haritaMap.addLayer(katmanMevcut);
+  ['normal','uydu','hibrit'].forEach(function(t) {
+    var el = document.getElementById('katman-'+t+'-btn');
+    if (el) el.classList.toggle('active', t===tip);
+  });
+}
+
+document.getElementById('modal-close').addEventListener('click',()=>document.getElementById('modal-overlay').classList.remove('show'));
+document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').classList.remove('show');});
+document.getElementById('agac-modal').addEventListener('click',e=>{if(e.target===document.getElementById('agac-modal')){
+  document.getElementById('agac-modal').classList.remove('show'); pendingLatLng=null;
+  document.getElementById('bahce-modal-baslik').textContent='🏡 Bahçe Ekle';
+  document.getElementById('agac-kaydet-btn').textContent='🏡 Bahçeyi Kaydet';
+  delete document.getElementById('agac-kaydet-btn').dataset.editId;
+}});
+
+
+// ════ SUPAbase SENKRONİZASYON ════
+let sbUrl='', sbKey='';
+(function loadSbConfig(){ try{ const c=JSON.parse(localStorage.getItem('sb_config')||'{}'); sbUrl=c.url||''; sbKey=c.key||''; }catch{} })();
+
+
+
+
+
+// Supabase REST yardımcılar
+async function sbFetch(tablo, opts={}){
+  if(!sbUrl||!sbKey) throw new Error('Supabase ayarları eksik.');
+  const { method='GET', body, select='*', filter='', upsert=false } = opts;
+  let url = `${sbUrl}/rest/v1/${tablo}`;
+  if(select!=='*') url += `?select=${select}`;
+  if(filter) url += (url.includes('?')?'&':'?')+filter;
+  const headers = {
+    'apikey': sbKey,
+    'Authorization': 'Bearer '+sbKey,
+    'Content-Type': 'application/json',
+    'Prefer': upsert ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal'
+  };
+  const res = await fetch(url, { method, headers, body: body?JSON.stringify(body):undefined });
+  if(!res.ok){ const err=await res.text(); throw new Error(`Supabase ${tablo}: ${res.status} ${err}`); }
+  if(method==='GET') return res.json();
+  return res.ok;
+}
+
+function sbLog(msg, tip='ok'){
+  const el = document.getElementById('sb-log');
+  const zaman = new Date().toLocaleTimeString('tr-TR');
+  const cls = tip==='err'?'sb-err':tip==='info'?'sb-info':'sb-ok';
+  el.innerHTML += `<span class="sb-log-satir"><span class="sb-log-zaman">[${zaman}]</span> <span class="${cls}">${msg}</span></span>\n`;
+  el.scrollTop = el.scrollHeight;
+}
+
+async function sbIstatistik(){
+  if(!sbUrl||!sbKey) return;
+  try{
+    const tabloAdlar = ['analizler','agaclar','verim','tedaviler','aktivite'];
+    const sonuclar = await Promise.allSettled(tabloAdlar.map(t=>sbFetch(t,{select:'id'})));
+    const el = document.getElementById('sb-istatistik');
+    el.innerHTML = tabloAdlar.map((t,i)=>{
+      const ok = sonuclar[i].status==='fulfilled';
+      const sayi = ok ? sonuclar[i].value?.length || 0 : '!';
+      const renkler = ['var(--e1)','var(--grn)','var(--g1)','var(--r1)','var(--b1)'];
+      return `<div style="background:#fff;border:1px solid var(--brd);border-radius:9px;padding:10px;text-align:center;box-shadow:var(--shd)">
+        <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:${renkler[i]}">${sayi}</div>
+        <div style="font-size:.7rem;color:rgba(26,18,9,.42);margin-top:2px">${t}</div>
+      </div>`;
+    }).join('');
+    document.getElementById('sb-son-sync').textContent = 'Supabase bağlantısı aktif';
+    document.getElementById('sb-sync-detay').textContent = tabloAdlar.map((t,i)=> ok?`${t}: ${sonuclar[i].value?.length||0}`:'').filter(Boolean).join(' · ');
+  }catch(e){ sbLog('İstatistik alınamadı: '+e.message,'err'); }
+}
+
+// ⬇️ VERİ ÇEK (Supabase → Yerel)
+
+
+// ⬆️ VERİ GÖNDER (Yerel → Supabase)
+
+
+// ════ MOBİL BOTTOM NAV ════
+const mobTabs = document.querySelectorAll('#mob-nav .mob-tab, #mob-diger .mob-tab');
+mobTabs.forEach(t=>{
+  t.addEventListener('click',()=>{
+    if(t.dataset.tab==='diger-menu'){
+      const dd=document.getElementById('mob-diger');
+      dd.style.display=dd.style.display==='none'?'block':'none';
+      return;
+    }
+    document.getElementById('mob-diger').style.display='none';
+    // Tüm tab panellerini kapat
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.ntab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('#mob-nav .mob-tab, #mob-diger .mob-tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    const panel = document.getElementById('tab-'+t.dataset.tab);
+    if(panel) panel.classList.add('active');
+    // Aynı sekmeyi desktop nav'da da aktif yap
+    const deskTab = document.querySelector(`.ntab[data-tab="${t.dataset.tab}"]`);
+    if(deskTab) deskTab.classList.add('active');
+    // Yükleme
+    if(t.dataset.tab==='arsiv') loadArsiv();
+    if(t.dataset.tab==='harita') initHarita();
+    if(t.dataset.tab==='verim') loadVerim();
+    if(t.dataset.tab==='gecmis') loadTedaviGecmis();
+    if(t.dataset.tab==='arsiv'){ loadArsiv(); loadTedaviGecmis(); }
+    if(t.dataset.tab==='rapor'){ loadVerim(); var sbr=document.getElementById('supabase-in-rapor'); if(sbr&&sbUrl&&sbKey) sbr.style.display='block'; }
+    if(t.dataset.tab==='supabase') initSupabaseTab();
+  });
+});
+
+// Dışarı tıklanınca diğer menüyü kapat
+document.addEventListener('click',e=>{
+  const dd=document.getElementById('mob-diger');
+  if(!dd) return;
+  if(!e.target.closest('#mob-diger')&&!e.target.closest('[data-tab="diger-menu"]')) dd.style.display='none';
+});
+
+// Admin ise mobil Supabase butonunu göster
+// Mobil Supabase butonu - her zaman görünür
+(function(){
+  var mst = document.getElementById('mob-sb-tab');
+  if(mst) mst.style.display='flex';
+})();
+
+// ════ PWA (Service Worker + Install) ════
+let pwaInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault();
+  pwaInstallPrompt = e;
+  setTimeout(()=>document.getElementById('pwa-banner').classList.add('show'), 3000);
+});
+
+document.getElementById('pwa-kur-btn').addEventListener('click',async()=>{
+  if(pwaInstallPrompt){ await pwaInstallPrompt.prompt(); pwaInstallPrompt=null; }
+  document.getElementById('pwa-banner').classList.remove('show');
+});
+document.getElementById('pwa-kapat-btn').addEventListener('click',()=>{
+  document.getElementById('pwa-banner').classList.remove('show');
+  localStorage.setItem('pwa_banner_dismissed','1');
+});
+
+// Service Worker kaydı
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').then(()=>console.log('SW registered')).catch(()=>{});
+}
+
+// iOS PWA install hint (Safari)
+(function iosHint(){
+  try {
+    var isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    var isStandalone = window.navigator.standalone;
+    var dismissed = localStorage.getItem('pwa_banner_dismissed');
+    if(isIos && !isStandalone && !dismissed){
+      var banner = document.getElementById('pwa-banner');
+      if(banner){
+        var txt = banner.querySelector('.pwa-txt');
+        var kur = banner.querySelector('.pwa-kur');
+        if(txt) txt.innerHTML = '<strong>Ana Ekrana Ekle</strong> — Safari Paylaş → Ana Ekrana Ekle';
+        if(kur) kur.style.display='none';
+        setTimeout(function(){ banner.classList.add('show'); }, 3000);
+      }
+    }
+  } catch(e) {}
+})();
+
+
+
+// Rapor sekmesindeki hızlı sync butonları
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'sb-cek-btn2') {
+    var log = document.getElementById('sb-log2');
+    if(log){ log.style.display='block'; log.textContent='⬇️ Çekiliyor...\n'; }
+    apiFetch('/api/sync/cek', {method:'POST', body:JSON.stringify({sbUrl:sbUrl, sbKey:sbKey})})
+      .then(function(r){ return r.json(); })
+      .then(function(d){ if(log) log.textContent += '✅ Tamamlandı: ' + JSON.stringify(d); })
+      .catch(function(e){ if(log) log.textContent += '❌ Hata: ' + e.message; });
+  }
+  if (e.target && e.target.id === 'sb-gonder-btn2') {
+    if(!confirm('Yerel veriler Supabase\'e gonderilecek?')) return;
+    var log = document.getElementById('sb-log2');
+    if(log){ log.style.display='block'; log.textContent='⬆️ Gönderiliyor...\n'; }
+    apiFetch('/api/sync/gonder', {method:'POST', body:JSON.stringify({sbUrl:sbUrl, sbKey:sbKey})})
+      .then(function(r){ return r.json(); })
+      .then(function(d){ if(log) log.textContent += '✅ Tamamlandı: ' + JSON.stringify(d); })
+      .catch(function(e){ if(log) log.textContent += '❌ Hata: ' + e.message; });
+  }
+});
+
+// ── Toprak Kaynak Seçici (GPS / PDF) ────────────────────────────────────────
+document.querySelectorAll('#toprak-kaynak-pills .pill').forEach(function(p){
+  p.addEventListener('click', function(){
+    document.querySelectorAll('#toprak-kaynak-pills .pill').forEach(function(x){ x.classList.remove('active'); });
+    p.classList.add('active');
+    var k = p.dataset.k;
+    var kf = document.getElementById('toprak-konum-form');
+    var pf = document.getElementById('toprak-pdf-form');
+    if(kf) kf.style.display = k==='konum' ? 'block' : 'none';
+    if(pf) pf.style.display = k==='pdf'   ? 'block' : 'none';
+  });
+});
+
+// Sayfa açılışında Supabase alanlarını doldur (kayıtlı config varsa)
+
+
+// ════ SUPABASE ════
+function initSupabaseTab() {
+  var urlEl = document.getElementById('sb-url');
+  var keyEl = document.getElementById('sb-key');
+  var uyari = document.getElementById('sb-url-uyari');
+  var sbLog2 = document.getElementById('sb-log');
+  if(urlEl && sbUrl) urlEl.value = sbUrl;
+  if(keyEl && sbKey) keyEl.value = sbKey;
+  if(uyari) uyari.style.display = (sbUrl && sbKey) ? 'none' : 'block';
+  if(sbUrl && sbKey && sbLog2) sbLog2.style.display = 'block';
+}
+
+document.addEventListener('click', function(e) {
+  // Kaydet
+  if(e.target && e.target.id === 'sb-kaydet-btn') {
+    var urlEl = document.getElementById('sb-url');
+    var keyEl = document.getElementById('sb-key');
+    var errEl = document.getElementById('sb-err');
+    if(!urlEl || !keyEl) return;
+    sbUrl = urlEl.value.trim().replace(/\/$/,'');
+    sbKey = keyEl.value.trim();
+    if(!sbUrl || !sbKey) { if(errEl){errEl.textContent='URL ve Key zorunlu.';errEl.classList.add('show');} return; }
+    localStorage.setItem('sb_config', JSON.stringify({url:sbUrl, key:sbKey}));
+    if(errEl) errEl.classList.remove('show');
+    var uyari = document.getElementById('sb-url-uyari');
+    if(uyari) uyari.style.display = 'none';
+    var logEl = document.getElementById('sb-log');
+    if(logEl) { logEl.style.display='block'; logEl.textContent='✅ Ayarlar kaydedildi.\n'; }
+    var durEl = document.getElementById('sb-durum');
+    if(durEl) durEl.textContent = 'Bağlantı hazır — Veri Çek veya Gönder butonuna basın';
+    e.target.textContent='✅ Kaydedildi!';
+    setTimeout(function(){ e.target.textContent='💾 Ayarları Kaydet'; }, 2000);
+  }
+
+  // Veri Çek
+  if(e.target && e.target.id === 'sb-cek-btn') {
+    if(!sbUrl||!sbKey){ alert('Önce URL ve Key girin.'); return; }
+    var logEl = document.getElementById('sb-log');
+    var durEl = document.getElementById('sb-durum');
+    if(logEl){ logEl.style.display='block'; logEl.textContent='⬇️ Supabase\'ten çekiliyor...\n'; }
+    e.target.disabled=true; e.target.textContent='⏳';
+    apiFetch('/api/sync/cek',{method:'POST',body:JSON.stringify({sbUrl:sbUrl,sbKey:sbKey})})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(logEl) logEl.textContent += '✅ Tamamlandı!\n'+JSON.stringify(d,null,2);
+        if(durEl) durEl.textContent = 'Son çekme: '+new Date().toLocaleString('tr-TR');
+      })
+      .catch(function(err){ if(logEl) logEl.textContent += '❌ Hata: '+err.message; })
+      .finally(function(){ e.target.disabled=false; e.target.textContent='⬇️ Veri Çek'; });
+  }
+
+  // Veri Gönder
+  if(e.target && e.target.id === 'sb-gonder-btn') {
+    if(!sbUrl||!sbKey){ alert('Önce URL ve Key girin.'); return; }
+    if(!confirm('Yerel veriler Supabase\'e gonderilecek?')) return;
+    var logEl = document.getElementById('sb-log');
+    var durEl = document.getElementById('sb-durum');
+    if(logEl){ logEl.style.display='block'; logEl.textContent='⬆️ Supabase\'e gonderiliyor...\n'; }
+    e.target.disabled=true; e.target.textContent='⏳';
+    apiFetch('/api/sync/gonder',{method:'POST',body:JSON.stringify({sbUrl:sbUrl,sbKey:sbKey})})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(logEl) logEl.textContent += '✅ Tamamlandi!\n'+JSON.stringify(d,null,2);
+        if(durEl) durEl.textContent = 'Son gonderme: '+new Date().toLocaleString('tr-TR');
+      })
+      .catch(function(err){ if(logEl) logEl.textContent += '❌ Hata: '+err.message; })
+      .finally(function(){ e.target.disabled=false; e.target.textContent='⬆️ Veri Gonder'; });
+  }
+});
+
+// Sayfa acilisinda Supabase alanlarini doldur
+(function(){
+  var urlEl=document.getElementById('sb-url');
+  var keyEl=document.getElementById('sb-key');
+  if(urlEl && sbUrl) urlEl.value=sbUrl;
+  if(keyEl && sbKey) keyEl.value=sbKey;
+  var uyari=document.getElementById('sb-url-uyari');
+  if(uyari) uyari.style.display=(sbUrl&&sbKey)?'none':'block';
+})();
+</script>
+</body>
+</html>

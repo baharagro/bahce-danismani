@@ -1,0 +1,17 @@
+{
+  "name": "bahce-danismani",
+  "version": "5.0.0",
+  "description": "Bahce Danismani - Yapay Zeka Tarim Asistani",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "@google/generative-ai": "^0.21.0"
+  }
+}
