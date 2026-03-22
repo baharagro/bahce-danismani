@@ -1396,6 +1396,14 @@ async function showTeshisDetay(id){
   }catch(e){ alert('Detay yüklenemedi: '+e.message); }
 }
 
+async function silTeshis(id){
+  if(!confirm('Bu teşhisi silmek istediğinizden emin misiniz?')) return;
+  try{
+    await apiFetch('/api/teshisler/'+id,{method:'DELETE'});
+    loadTeshisGecmis();
+  }catch(e){ alert('Silme hatası: '+e.message); }
+}
+
 // ══ TEDAVİ KAYDET ══
 document.getElementById('ted-btn').addEventListener('click',async()=>{
   const ilac=document.getElementById('ted-ilac').value;
