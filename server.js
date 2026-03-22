@@ -1,7 +1,14 @@
+try { require('dotenv').config(); } catch {} // Railway'de dotenv olmasa da çalışır
 /**
- * Bahçe Danışmanı — Backend v5.0 (Giriş yok, Supabase sync)
+ * Bahçe Danışmanı — Backend v5.1
  * npm install express cors @google/generative-ai
  * node server.js
+ *
+ * Railway env variables:
+ *   GEMINI_API_KEY  — Gemini API anahtarı
+ *   SB_URL          — Supabase Project URL (Railway'de kalıcı)
+ *   SB_KEY          — Supabase anon key   (Railway'de kalıcı)
+ *   PORT            — Otomatik atanır
  */
 const express = require('express');
 const cors    = require('cors');
@@ -12,9 +19,17 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyBM6iO_jolJB_SAtYJAI31IoDHuQtdFRBk';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyBxHUZyKp6-rTG8frjCNPMPZ9hkJbA_1xk';
+if (!GEMINI_API_KEY) {
+  console.error('❌ GEMINI_API_KEY env variable tanımlı değil!');
+  console.error('   Lokal: server.js içine yaz veya .env dosyası oluştur');
+  console.error('   Railway: Variables sekmesine GEMINI_API_KEY ekle');
+  process.exit(1);
+}
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
+// Railway'de dosya sistemi ephemeral — DB dosyaları her deploy'da sıfırlanır.
+// Kalıcı veri için Railway Volume ekleyin veya Supabase sync kullanın.
 const DB_FILE   = path.join(__dirname, 'bahce_data.json');
 const ESKI_FILE = path.join(__dirname, 'toprak_arsiv.json');
 
@@ -67,7 +82,57 @@ app.use(express.static(path.join(__dirname)));
 
 const TOPRAK_SCHEMA = `{"bolge_adi":"...","iklim_tipi":"...","yillik_yagis":"...","toprak_tipi":"...","ph_mevcut":"...","ph_ideal":"6.5-7.5","ph_durumu":"uygun/hafif alkali/cok alkali/asidik","organik_madde":"Dusuk/Orta/Yuksek","drenaj":"Iyi/Orta/Zayif","tuzluluk_riski":"Dusuk/Orta/Yuksek","genel_puan":75,"genel_yorum":"...","eksik_besinler":[{"besin":"...","mevcut_deger":"...","ideal_deger":"...","belirti":"...","oneri":"..."}],"iyilestirme_adimlari":[{"kategori":"...","oncelik":"Acil/Orta Vadeli/Uzun Vadeli","uygulama":"...","miktar":"...","zamanlama":"..."}],"mevsimsel_takvim":{"ilkbahar":"...","yaz":"...","sonbahar":"...","kis":"..."},"yerel_kaynaklar":"...","uyari":"...","pdf_ozeti":""}`;
 
-app.get('/health', (_,res) => res.json({ status:'ok', version:'5.0' }));
+const CONFIG_FILE = path.join(__dirname, 'bahce_config.json');
+
+function readConfig() {
+  // Öncelik sırası: 1) Env variables (Railway'de kalıcı), 2) Config dosyası (lokal)
+  const envCfg = {
+    sbUrl: process.env.SB_URL || '',
+    sbKey: process.env.SB_KEY || '',
+  };
+  try {
+    if (fs.existsSync(CONFIG_FILE)) {
+      const fileCfg = JSON.parse(fs.readFileSync(CONFIG_FILE,'utf8'));
+      // Env var varsa onu tercih et, yoksa dosyadakini kullan
+      return {
+        sbUrl: envCfg.sbUrl || fileCfg.sbUrl || '',
+        sbKey: envCfg.sbKey || fileCfg.sbKey || '',
+      };
+    }
+  } catch {}
+  return envCfg;
+}
+
+function writeConfig(c) {
+  // Dosyaya yaz (lokal çalışma için). Railway'de env variable kullanılmalı.
+  try { fs.writeFileSync(CONFIG_FILE, JSON.stringify(c,null,2),'utf8'); } catch {}
+}
+
+app.get('/health', (_,res) => res.json({ status:'ok', version:'5.1' }));
+
+// ── SUNUCU TARAFLI CONFIG (Railway'de tüm cihazlar paylaşır) ─────────────────
+app.get('/api/config', (req,res) => {
+  const cfg = readConfig();
+  // Tam config'i döndür — tek kullanıcı/güvenilir ekip için uygundur
+  res.json({ sbUrl: cfg.sbUrl||'', sbKey: cfg.sbKey||'' });
+});
+
+app.post('/api/config', (req,res) => {
+  const { sbUrl, sbKey } = req.body;
+  if (!sbUrl || !sbKey) return res.status(400).json({ error:'sbUrl ve sbKey gerekli.' });
+  const cfg = readConfig();
+  cfg.sbUrl = sbUrl.trim().replace(/\/$/,'');
+  cfg.sbKey = sbKey.trim();
+  writeConfig(cfg);
+  res.json({ ok:true });
+});
+
+// Config'den sbUrl/sbKey oku (sync endpoint'leri için)
+function getSbConfig(body) {
+  if (body && body.sbUrl && body.sbKey) return { sbUrl: body.sbUrl, sbKey: body.sbKey };
+  const cfg = readConfig();
+  return { sbUrl: cfg.sbUrl||'', sbKey: cfg.sbKey||'' };
+}
 
 // ── GEOCODİNG ────────────────────────────────────────────────────────────────
 app.get('/api/geocode', (req,res) => {
@@ -180,27 +245,161 @@ app.post('/api/yabani-ot', async (req,res) => {
 app.get('/api/hava', (req,res) => {
   const { lat, lon } = req.query;
   if (!lat||!lon) return res.status(400).json({ error:'lat ve lon gerekli.' });
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code,cloud_cover,surface_pressure&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,uv_index_max,sunrise,sunset,et0_fao_evapotranspiration&timezone=auto&forecast_days=16&wind_speed_unit=kmh`;
+
+  // Open-Meteo: günlük + SAATLİK veri — iOS/Foreca kalitesinde
+  const current = [
+    'temperature_2m','relative_humidity_2m','apparent_temperature',
+    'precipitation','wind_speed_10m','wind_gusts_10m','wind_direction_10m',
+    'weather_code','cloud_cover','surface_pressure','visibility'
+  ].join(',');
+
+  const daily = [
+    'weather_code','temperature_2m_max','temperature_2m_min',
+    'apparent_temperature_max','apparent_temperature_min',
+    'precipitation_sum','precipitation_hours','precipitation_probability_max',
+    'wind_speed_10m_max','wind_gusts_10m_max','wind_direction_10m_dominant',
+    'uv_index_max','sunrise','sunset',
+    'et0_fao_evapotranspiration',
+    'relative_humidity_2m_max','relative_humidity_2m_min',
+    'shortwave_radiation_sum'
+  ].join(',');
+
+  // Saatlik: yağış + rüzgar + nem + sıcaklık — kuru pencere tespiti için
+  const hourly = [
+    'temperature_2m','precipitation','precipitation_probability',
+    'wind_speed_10m','weather_code','relative_humidity_2m','visibility'
+  ].join(',');
+
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
+    + `&current=${current}&daily=${daily}&hourly=${hourly}`
+    + `&timezone=auto&forecast_days=16&wind_speed_unit=kmh`;
+
   https.get(url, r=>{
     let d=''; r.on('data',c=>d+=c);
     r.on('end',()=>{
       try {
         const p = JSON.parse(d);
-        const wmo = {0:'Açık',1:'Çoğunlukla Açık',2:'Parçalı Bulutlu',3:'Kapalı',45:'Sis',48:'Kırağılı Sis',51:'Hafif Çisenti',53:'Çisenti',55:'Yoğun Çisenti',61:'Hafif Yağmur',63:'Yağmurlu',65:'Kuvvetli Yağmur',71:'Hafif Kar',73:'Kar',75:'Yoğun Kar',80:'Hafif Sağanak',81:'Sağanak',82:'Şiddetli Sağanak',95:'Fırtına',96:'Dolulu Fırtına',99:'Şiddetli Fırtına'};
+        const wmo = {
+          0:'Açık',1:'Çoğunlukla Açık',2:'Parçalı Bulutlu',3:'Kapalı',
+          45:'Sis',48:'Kırağılı Sis',
+          51:'Hafif Çisenti',53:'Çisenti',55:'Yoğun Çisenti',
+          61:'Hafif Yağmur',63:'Yağmurlu',65:'Kuvvetli Yağmur',
+          71:'Hafif Kar',73:'Kar',75:'Yoğun Kar',
+          80:'Hafif Sağanak',81:'Sağanak',82:'Şiddetli Sağanak',
+          85:'Hafif Kar Sağanağı',86:'Kar Sağanağı',
+          95:'Fırtına',96:'Dolulu Fırtına',99:'Şiddetli Fırtına'
+        };
         const gunler = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
-        const cur=p.current||{}, daily=p.daily||{};
-        const tahmin=(daily.time||[]).map((t,i)=>({tarih:t,gun:gunler[new Date(t).getDay()],tarihFmt:new Date(t).toLocaleDateString('tr-TR',{day:'2-digit',month:'short'}),durum:wmo[daily.weather_code[i]]||'—',kod:daily.weather_code[i],maxTemp:Math.round(daily.temperature_2m_max[i]||0),minTemp:Math.round(daily.temperature_2m_min[i]||0),yagis:+(daily.precipitation_sum[i]||0).toFixed(1),yagisOlasiligi:daily.precipitation_probability_max?daily.precipitation_probability_max[i]:null,ruzgar:Math.round(daily.wind_speed_10m_max[i]||0),ruzgarHamle:Math.round(daily.wind_gusts_10m_max[i]||0),uvMax:daily.uv_index_max?+(daily.uv_index_max[i]||0).toFixed(1):null,et0:daily.et0_fao_evapotranspiration?+(daily.et0_fao_evapotranspiration[i]||0).toFixed(1):null}));
-        const uyarilar=[], ilacYasak=new Set(), hafta=tahmin.slice(0,7);
-        const donG=hafta.filter(t=>t.minTemp<=2); if(donG.length){uyarilar.push('🧊 DON RİSKİ: '+donG.map(t=>t.gun+' ('+t.minTemp+'°C)').join(', ')+' — Çiçek ve meyveler için don önlemi alın!');donG.forEach(t=>ilacYasak.add(t.gun));}
-        const kuvYag=hafta.filter(t=>t.yagis>25); if(kuvYag.length){uyarilar.push('⛈️ KUVVETLİ YAĞIŞ: '+kuvYag.map(t=>t.gun+' ('+t.yagis+'mm)').join(', ')+' — Mantar hastalığı riski yüksek');kuvYag.forEach(t=>ilacYasak.add(t.gun));}
-        const norYag=hafta.filter(t=>t.yagis>5&&t.yagis<=25); if(norYag.length){uyarilar.push('🌧️ YAĞIŞ: '+norYag.map(t=>t.gun+' ('+t.yagis+'mm)').join(', ')+' — Bu günlerde ilaçlama yapmayın');norYag.forEach(t=>ilacYasak.add(t.gun));}
-        const ruzG=hafta.filter(t=>t.ruzgar>25||t.ruzgarHamle>40); if(ruzG.length){uyarilar.push('💨 KUVVETLİ RÜZGAR: '+ruzG.map(t=>t.gun+' ('+t.ruzgar+'km/s)').join(', ')+' — İlaçlama yapma');ruzG.forEach(t=>ilacYasak.add(t.gun));}
-        const sicG=hafta.filter(t=>t.maxTemp>=35); if(sicG.length) uyarilar.push('🌡️ AŞIRI SICAKLIK: '+sicG.map(t=>t.gun+' ('+t.maxTemp+'°C)').join(', ')+' — Sabah 06–09 ilaçla');
-        const topYag=hafta.reduce((s,t)=>s+t.yagis,0), ortSic=hafta.reduce((s,t)=>s+t.maxTemp,0)/7;
-        const genelYorum=topYag>80?`Haftada ${topYag.toFixed(0)}mm yağış bekleniyor. Mantar/bakteri hastalık riski yüksek.`:topYag>30?`Haftada ${topYag.toFixed(0)}mm yağış bekleniyor. Sulama ihtiyacı azaldı.`:topYag<5&&ortSic>30?`Kurak ve sıcak hafta (ort. ${ortSic.toFixed(0)}°C). Sulamayı artırın.`:`Dengeli hafta (${topYag.toFixed(0)}mm, ort. ${ortSic.toFixed(0)}°C).`;
-        const ilaclamaTakvim=hafta.map(t=>({gun:t.gun,tarih:t.tarihFmt,uygun:!ilacYasak.has(t.gun)&&t.ruzgar<=20&&t.yagis<=2&&t.maxTemp<35&&t.minTemp>1,sebep:ilacYasak.has(t.gun)?(t.yagis>5?'Yağmurlu':t.ruzgar>25?'Rüzgarlı':'Don riski'):t.maxTemp>=35?'Çok sıcak':null}));
-        res.json({anlik:{sicaklik:Math.round(cur.temperature_2m||0),hissedilen:Math.round(cur.apparent_temperature||cur.temperature_2m||0),nem:cur.relative_humidity_2m||0,yagis:+(cur.precipitation||0).toFixed(1),ruzgar:Math.round(cur.wind_speed_10m||0),ruzgarHamle:Math.round(cur.wind_gusts_10m||0),ruzgarYon:cur.wind_direction_10m||0,durum:wmo[cur.weather_code]||'—',kod:cur.weather_code},tahmin,uyarilar,ilaclamaTakvim,genelYorum});
-      } catch(e){res.status(500).json({error:'Hava verisi işlenemedi'});}
+        const cur = p.current||{};
+        const daily_d = p.daily||{};
+        const hourly_d = p.hourly||{};
+
+        // ── Saatlik verileri tarihe göre grupla ─────────────────────────────
+        // { '2025-03-22': [{saat:'06:00', yagis:0.2, ruzgar:8, ...}, ...] }
+        const saatlikGruplar = {};
+        (hourly_d.time||[]).forEach((zaman, i) => {
+          const tarih = zaman.slice(0,10); // YYYY-MM-DD
+          const saat  = zaman.slice(11,16); // HH:MM
+          if (!saatlikGruplar[tarih]) saatlikGruplar[tarih] = [];
+          saatlikGruplar[tarih].push({
+            saat,
+            sicaklik : +(hourly_d.temperature_2m?.[i]??0).toFixed(1),
+            yagis    : +(hourly_d.precipitation?.[i]??0).toFixed(2),
+            yagisOlas: hourly_d.precipitation_probability?.[i]??0,
+            ruzgar   : Math.round(hourly_d.wind_speed_10m?.[i]??0),
+            nem      : hourly_d.relative_humidity_2m?.[i]??50,
+            kod      : hourly_d.weather_code?.[i]??0,
+            gorus    : hourly_d.visibility?.[i]??null,
+          });
+        });
+
+        // ── Gün içi kuru pencere hesapla ────────────────────────────────────
+        // Sabah (05–11) ve akşam (17–21) arası yağış < 0.1mm + rüzgar < 25 km/s
+        function kuruPencere(tarih) {
+          const saatler = saatlikGruplar[tarih] || [];
+          const kontrol = (minSaat, maxSaat) => saatler
+            .filter(s => s.saat >= minSaat && s.saat <= maxSaat)
+            .filter(s => s.yagis < 0.1 && s.ruzgar < 25 && ![61,63,65,80,81,82,95,96,99].includes(s.kod));
+
+          const sabahKuru  = kontrol('05:00','10:00');
+          const aksamKuru  = kontrol('17:00','21:00');
+          const uygunSaatler = [];
+          if (sabahKuru.length >= 3) uygunSaatler.push(`Sabah ${sabahKuru[0].saat}–${sabahKuru[sabahKuru.length-1].saat}`);
+          if (aksamKuru.length >= 2) uygunSaatler.push(`Akşam ${aksamKuru[0].saat}–${aksamKuru[aksamKuru.length-1].saat}`);
+          return uygunSaatler; // boş ise pencere yok
+        }
+
+        // ── Günlük nem max/min ───────────────────────────────────────────────
+        const nemMaxArr = daily_d.relative_humidity_2m_max || [];
+        const nemMinArr = daily_d.relative_humidity_2m_min || [];
+
+        // ── 16 Günlük tahmin dizisi ──────────────────────────────────────────
+        const tahmin = (daily_d.time||[]).map((t,i) => {
+          const pencereler = kuruPencere(t);
+          return {
+            tarih       : t,
+            gun         : gunler[new Date(t).getDay()],
+            tarihFmt    : new Date(t).toLocaleDateString('tr-TR',{day:'2-digit',month:'short'}),
+            durum       : wmo[daily_d.weather_code[i]] || '—',
+            kod         : daily_d.weather_code[i],
+            maxTemp     : Math.round(daily_d.temperature_2m_max[i]||0),
+            minTemp     : Math.round(daily_d.temperature_2m_min[i]||0),
+            hissMaxTemp : daily_d.apparent_temperature_max ? Math.round(daily_d.apparent_temperature_max[i]||0) : null,
+            hissMinTemp : daily_d.apparent_temperature_min ? Math.round(daily_d.apparent_temperature_min[i]||0) : null,
+            yagis       : +(daily_d.precipitation_sum[i]||0).toFixed(1),
+            yagisOlasiligi : daily_d.precipitation_probability_max ? daily_d.precipitation_probability_max[i] : null,
+            yagis_saat  : daily_d.precipitation_hours ? +(daily_d.precipitation_hours[i]||0) : null,
+            ruzgar      : Math.round(daily_d.wind_speed_10m_max[i]||0),
+            ruzgarMax   : Math.round(daily_d.wind_speed_10m_max[i]||0),
+            ruzgarHamle : Math.round(daily_d.wind_gusts_10m_max[i]||0),
+            ruzgarYon   : daily_d.wind_direction_10m_dominant ? daily_d.wind_direction_10m_dominant[i] : null,
+            uvMax       : daily_d.uv_index_max ? +(daily_d.uv_index_max[i]||0).toFixed(1) : null,
+            nemMax      : nemMaxArr[i] ?? null,
+            nemMin      : nemMinArr[i] ?? null,
+            gunes       : daily_d.shortwave_radiation_sum ? +(daily_d.shortwave_radiation_sum[i]||0).toFixed(0) : null,
+            et0         : daily_d.et0_fao_evapotranspiration ? +(daily_d.et0_fao_evapotranspiration[i]||0).toFixed(1) : null,
+            gunesDogu   : daily_d.sunrise ? daily_d.sunrise[i] : null,
+            gunesBatis  : daily_d.sunset  ? daily_d.sunset[i]  : null,
+            // Kuru pencere saatleri (hafif yağışlı günler için ilaçlama fırsatı)
+            kuruPencereler : pencereler,
+            saatlik     : (saatlikGruplar[t]||[]).map(s=>({
+              saat:s.saat, sicaklik:s.sicaklik, yagis:s.yagis,
+              ruzgar:s.ruzgar, nem:s.nem, kod:s.kod
+            })),
+          };
+        });
+
+        // ── Anlık veri ───────────────────────────────────────────────────────
+        const anlik = {
+          sicaklik    : Math.round(cur.temperature_2m||0),
+          hissedilen  : Math.round(cur.apparent_temperature||cur.temperature_2m||0),
+          nem         : cur.relative_humidity_2m||0,
+          yagis       : +(cur.precipitation||0).toFixed(1),
+          ruzgar      : Math.round(cur.wind_speed_10m||0),
+          ruzgarHamle : Math.round(cur.wind_gusts_10m||0),
+          ruzgarYon   : cur.wind_direction_10m||0,
+          bulutluluk  : cur.cloud_cover??null,
+          basinc      : cur.surface_pressure ? Math.round(cur.surface_pressure) : null,
+          gorus       : cur.visibility ? (+(cur.visibility/1000).toFixed(1)) : null,
+          durum       : wmo[cur.weather_code]||'—',
+          kod         : cur.weather_code,
+        };
+
+        res.json({
+          anlik,
+          tahmin,
+          uyarilar : [], // frontend kendi üretiyor
+          meta     : {
+            kaynak      : 'Open-Meteo',
+            guncelleme  : new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}),
+            lat         : parseFloat(lat).toFixed(4),
+            lon         : parseFloat(lon).toFixed(4),
+          }
+        });
+      } catch(e){
+        console.error('Hava hatası:',e.message);
+        res.status(500).json({error:'Hava verisi işlenemedi: '+e.message});
+      }
     });
   }).on('error',e=>res.status(500).json({error:e.message}));
 });
@@ -266,11 +465,56 @@ app.post('/api/sync/gonder', async (req,res)=>{
     const {sbUrl,sbKey}=req.body;
     if(!sbUrl||!sbKey) return res.status(400).json({error:'sbUrl ve sbKey gerekli.'});
     const db=readDB(); const sonuclar={};
-    const tablolar=[{key:'analizler',sb:'analizler'},{key:'agaclar',sb:'agaclar'},{key:'verim',sb:'verim'},{key:'tedaviler',sb:'tedaviler'}];
-    for(const {key,sb} of tablolar){
-      const kayitlar=(db[key]||[]).map(k=>{const c={...k};if(c.sonuc&&typeof c.sonuc==='object')c.sonuc=JSON.stringify(c.sonuc);if(c.yapan&&typeof c.yapan==='object')c.yapan=JSON.stringify(c.yapan);return c;});
-      if(kayitlar.length>0){const batches=[];for(let i=0;i<kayitlar.length;i+=500)batches.push(kayitlar.slice(i,i+500));for(const batch of batches)await sbRequest(sbUrl,sbKey,sb,'POST',batch,true);}
-      sonuclar[key]=kayitlar.length;
+
+    // analizler: camelCase → snake_case dönüşümü
+    const analizler = (db.analizler||[]).map(k=>{
+      const sonuc = k.sonuc||{};
+      return {
+        id             : k.id,
+        bahce_adi      : k.bahceAdi || k.bahce_adi || null,
+        mevsim         : k.mevsim || null,
+        yil            : k.yil || null,
+        tarih          : k.tarih || new Date().toISOString(),
+        genel_puan     : sonuc.genel_puan || null,
+        bolge_adi      : sonuc.bolge_adi || null,
+        toprak_tipi    : sonuc.toprak_tipi || null,
+        iklim_tipi     : sonuc.iklim_tipi || null,
+        ph_mevcut      : sonuc.ph_mevcut || null,
+        ph_durumu      : sonuc.ph_durumu || null,
+        organik_madde  : sonuc.organik_madde || null,
+        drenaj         : sonuc.drenaj || null,
+        tuzluluk_riski : sonuc.tuzluluk_riski || null,
+        genel_yorum    : sonuc.genel_yorum || null,
+        sonuc_json     : typeof sonuc === 'object' ? JSON.stringify(sonuc) : sonuc,
+      };
+    });
+
+    // Diğer tablolar
+    const agaclar   = (db.agaclar||[]);
+    const verim     = (db.verim||[]);
+    const tedaviler = (db.tedaviler||[]).map(t=>({
+      id: t.id,
+      ilac: t.ilac||null,
+      doz: t.doz||null,
+      uygulama_tarihi: t.uygulama_tarihi||t.tarih||new Date().toISOString(),
+      notlar: t.notlar||null,
+      tespit_id: t.tespit_id||null,
+    }));
+
+    const tablolar = [
+      {sb:'analizler', kayitlar:analizler},
+      {sb:'agaclar',   kayitlar:agaclar},
+      {sb:'verim',     kayitlar:verim},
+      {sb:'tedaviler', kayitlar:tedaviler},
+    ];
+
+    for(const {sb, kayitlar} of tablolar){
+      if(kayitlar.length>0){
+        const batches=[];
+        for(let i=0;i<kayitlar.length;i+=500) batches.push(kayitlar.slice(i,i+500));
+        for(const batch of batches) await sbRequest(sbUrl,sbKey,sb,'POST',batch,true);
+      }
+      sonuclar[sb]=kayitlar.length;
     }
     res.json(sonuclar);
   } catch(err){console.error('Sync gönder:',err.message);res.status(500).json({error:err.message});}
@@ -298,9 +542,15 @@ app.post('/api/sync/cek', async (req,res)=>{
   } catch(err){console.error('Sync çek:',err.message);res.status(500).json({error:err.message});}
 });
 
-// Railway ve benzeri platformlarda 0.0.0.0'a bağlan
-app.listen(PORT, '0.0.0.0', ()=>{
-  console.log(`\n🌿 Bahçe Danışmanı v5.0`);
-  console.log(`   http://localhost:${PORT}`);
-  console.log(`   Ortam: ${process.env.RAILWAY_ENVIRONMENT || 'lokal'}\n`);
+app.listen(PORT,()=>{
+  const cfg = readConfig();
+  const isRailway = !!process.env.RAILWAY_ENVIRONMENT || !!process.env.RAILWAY_SERVICE_NAME;
+  console.log(`\n🌿 Bahçe Danışmanı v5.1 — ${isRailway ? 'Railway' : 'http://localhost:'+PORT}`);
+  console.log(`   Gemini API : ${GEMINI_API_KEY ? '✅ Tanımlı' : '❌ Eksik (GEMINI_API_KEY)'}`);
+  console.log(`   Supabase   : ${cfg.sbUrl ? '✅ '+cfg.sbUrl.slice(0,40)+'...' : '⚠️  Tanımlı değil (SB_URL + SB_KEY env ekleyin)'}`);
+  if (isRailway) {
+    console.log(`   ⚠️  Railway: Dosya sistemi ephemeral — veriler deploy'da sıfırlanır.`);
+    console.log(`   💡 Kalıcı veri için: Railway → Variables → SB_URL ve SB_KEY ekleyin.`);
+  }
+  console.log('');
 });
