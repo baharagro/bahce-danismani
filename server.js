@@ -542,8 +542,26 @@ app.post('/api/sync/gonder', async (req,res)=>{
 
     const tablolar = [
       {sb:'analizler',  kayitlar:analizler},
-      {sb:'agaclar',    kayitlar:db.agaclar||[]},
-      {sb:'verim',      kayitlar:db.verim||[]},
+      {sb:'agaclar',    kayitlar:(db.agaclar||[]).map(a=>({
+        id     : a.id,
+        adi    : a.adi || a.name || null,
+        meyve  : a.meyve || null,
+        yil    : a.yil || null,
+        durum  : a.durum || 'saglikli',
+        notlar : a.notlar || null,
+        lat    : a.lat || null,
+        lon    : a.lon || null,
+      }))},
+      {sb:'verim',      kayitlar:(db.verim||[]).map(v=>({
+        id          : v.id,
+        meyve       : v.meyve || null,
+        yil         : v.yil || null,
+        gerceklesen : v.gerceklesen || 0,
+        hedef       : v.hedef || null,
+        agac_sayisi : v.agac_sayisi || null,
+        fiyat       : v.fiyat || null,
+        notlar      : v.notlar || null,
+      }))},
       {sb:'tedaviler',  kayitlar:tedaviler},
       {sb:'teshisler',  kayitlar:teshisler},
     ];
