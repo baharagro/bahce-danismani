@@ -1271,8 +1271,23 @@ hBtn.addEventListener('click',async()=>{
   startLoader('h');
   try{
     const fotograflar=hFotos.map(f=>f.b64);
+    // İlk fotoğraftan 200x200 thumbnail oluştur
+    let thumbnail = null;
+    if(hFotos[0]?.dataUrl){
+      await new Promise(res=>{
+        const img=new Image(); img.onload=()=>{
+          const S=200; let w=img.width,h=img.height;
+          const sc=Math.min(S/w,S/h);
+          const cv=document.createElement('canvas');
+          cv.width=Math.round(w*sc); cv.height=Math.round(h*sc);
+          cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+          thumbnail=cv.toDataURL('image/jpeg',0.7);
+          res();
+        }; img.src=hFotos[0].dataUrl;
+      });
+    }
     const d=await apiJson('/api/teshis',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({fotograflar,mimeType:'image/jpeg',fotografTuru:selType,meyve:selMeyve,sesYazisi})});
+      body:JSON.stringify({fotograflar,mimeType:'image/jpeg',fotografTuru:selType,meyve:selMeyve,sesYazisi,thumbnail})});
     stopLoader('h'); renderHastalik(d);
     if(hFotos[0]) addImgHist(hFotos[0].dataUrl, d.tespit||selMeyve);
   }catch(e){stopLoader('h');showErr('h-err','Hata: '+e.message);}
@@ -1355,6 +1370,7 @@ async function showTeshisDetay(id){
     const pct = s.siddet_yuzdesi||0;
     document.getElementById('modal-title').textContent = `${ico} ${s.tespit||'Teşhis Detayı'}`;
     document.getElementById('modal-body').innerHTML = `
+      ${t.thumbnail ? `<img src="${t.thumbnail}" style="width:100%;max-height:200px;object-fit:cover;border-radius:9px;margin-bottom:14px">` : ''}
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
         <span style="background:var(--rlt);color:var(--r1);padding:3px 10px;border-radius:99px;font-size:.75rem;font-weight:700">${t.meyveAdi||t.meyve_adi||t.meyve||'—'}</span>
         <span style="background:var(--warm);color:rgba(26,18,9,.55);padding:3px 10px;border-radius:99px;font-size:.75rem">${t.fotografTuru||t.fotograf_turu||'—'}</span>
