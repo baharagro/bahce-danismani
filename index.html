@@ -665,6 +665,12 @@ footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13p
       <div class="tip"><span class="tico">📅</span><div class="tb"><strong>Tedavi Takibi</strong><span>Teşhis sonrası tedaviyi kaydedin, ilerlemeyi izleyin.</span></div></div>
     </div>
   </div>
+
+  <!-- TEŞHİS GEÇMİŞİ -->
+  <div class="card">
+    <div class="slabel">🔬 Teşhis Geçmişi</div>
+    <div id="teshis-gecmis"><div class="hempty">Henüz teşhis geçmişi yok</div></div>
+  </div>
 </div>
 
 <!-- ══ KARŞILAŞTIRMA ══ -->
@@ -1037,7 +1043,7 @@ SB_KEY  = eyJhbGci...</div>
     <button class="mob-tab" data-tab="toprak"><span class="mt-ico">🌱</span><span class="mt-lbl">Toprak</span></button>
     <button class="mob-tab" data-tab="hava"><span class="mt-ico">🌤️</span><span class="mt-lbl">Hava</span></button>
     <button class="mob-tab" data-tab="harita"><span class="mt-ico">🗺️</span><span class="mt-lbl">Harita</span></button>
-    <button class="mob-tab" data-tab="arsiv"><span class="mt-ico">📂</span><span class="mt-lbl">Arşiv</span></button>
+    <button class="mob-tab" data-tab="supabase"><span class="mt-ico">☁️</span><span class="mt-lbl">Sync</span></button>
     <button class="mob-tab" data-tab="diger-menu"><span class="mt-ico">⋯</span><span class="mt-lbl">Diğer</span></button>
   </div>
 </div>
@@ -1047,7 +1053,7 @@ SB_KEY  = eyJhbGci...</div>
     <button class="mob-tab" data-tab="yabani-ot" style="min-width:unset"><span class="mt-ico">🌾</span><span class="mt-lbl">Ot</span></button>
     <button class="mob-tab" data-tab="takvim" style="min-width:unset"><span class="mt-ico">📅</span><span class="mt-lbl">Takvim</span></button>
     <button class="mob-tab" data-tab="rapor" style="min-width:unset"><span class="mt-ico">📑</span><span class="mt-lbl">Rapor</span></button>
-    <button class="mob-tab" data-tab="supabase" style="min-width:unset"><span class="mt-ico">☁️</span><span class="mt-lbl">Sync</span></button>
+    <button class="mob-tab" data-tab="arsiv" style="min-width:unset"><span class="mt-ico">📂</span><span class="mt-lbl">Arşiv</span></button>
   </div>
 </div>
 <!-- PWA INSTALL BANNER -->
@@ -1125,6 +1131,7 @@ document.querySelectorAll('.ntab').forEach(t=>{
     if(t.dataset.tab==='verim') loadVerim();
     if(t.dataset.tab==='gecmis') loadTedaviGecmis();
     if(t.dataset.tab==='arsiv'){ loadArsiv(); loadTedaviGecmis(); }
+    if(t.dataset.tab==='hastalik') loadTeshisGecmis();
     if(t.dataset.tab==='rapor'){ loadVerim(); var sbr=document.getElementById('supabase-in-rapor'); if(sbr&&sbUrl&&sbKey) sbr.style.display='block'; }
     if(t.dataset.tab==='supabase') initSupabaseTab();
     if(t.dataset.tab==='hava' && locLat) fetchHava(locLat, locLon);
@@ -1292,6 +1299,40 @@ function renderHastalik(d){
   if(d.durum!=='saglikli'){document.getElementById('h-tedavi-box').style.display='block';}
   const rc=document.getElementById('h-result'); rc.classList.add('show');
   rc.scrollIntoView({behavior:'smooth',block:'start'});
+  // Teşhis geçmişini yenile (server'a zaten kaydedildi)
+  loadTeshisGecmis();
+}
+
+// ══ TEŞHİS GEÇMİŞİ ══
+async function loadTeshisGecmis(){
+  const el = document.getElementById('teshis-gecmis');
+  if(!el) return;
+  try{
+    const res = await apiFetch('/api/teshisler');
+    const teshisler = await res.json();
+    if(!teshisler.length){ el.innerHTML='<div class="hempty">Henüz teşhis geçmişi yok</div>'; return; }
+    const durumIco = {saglikli:'✅', uyari:'⚠️', tehlike:'🚨'};
+    el.innerHTML = teshisler.slice(0,20).map(t=>{
+      const s = t.sonuc||{};
+      const ico = durumIco[(s.durum||'').toLowerCase()] || '🔬';
+      const tarih = new Date(t.tarih).toLocaleDateString('tr-TR');
+      const saat = new Date(t.tarih).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+      return `<div style="background:#fff;border:1px solid var(--brd);border-radius:9px;padding:12px;margin-bottom:8px;box-shadow:var(--shd);display:flex;gap:10px;align-items:flex-start">
+        <span style="font-size:1.3rem;flex-shrink:0">${ico}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:.88rem;margin-bottom:2px">${s.tespit||'—'}</div>
+          <div style="font-size:.75rem;color:rgba(26,18,9,.5);margin-bottom:4px">${t.meyveAdi||t.meyve||'—'} · ${s.siddet||''} · ${tarih} ${saat}</div>
+          ${s.kimyasal_onlem?`<div style="font-size:.76rem;color:rgba(26,18,9,.55);border-top:1px solid var(--brd);padding-top:5px;margin-top:5px">💊 ${s.kimyasal_onlem.slice(0,120)}${s.kimyasal_onlem.length>120?'…':''}</div>`:''}
+        </div>
+        <button onclick="silTeshis('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:1rem;color:rgba(26,18,9,.3);flex-shrink:0" title="Sil">🗑</button>
+      </div>`;
+    }).join('');
+  }catch(e){ if(el) el.innerHTML='<div class="hempty">Geçmiş yüklenemedi</div>'; }
+}
+async function silTeshis(id){
+  if(!confirm('Bu teşhisi silmek istediğinizden emin misiniz?')) return;
+  await apiFetch('/api/teshisler/'+id,{method:'DELETE'});
+  loadTeshisGecmis();
 }
 
 // ══ TEDAVİ KAYDET ══
@@ -2300,6 +2341,11 @@ async function loadArsiv(){
   try{
     const res=await apiFetch('/api/arsiv'); const data=await res.json();
     const analizler=data.analizler||[];
+    // camelCase ve snake_case her ikisini de destekle
+    analizler.forEach(a=>{
+      if(!a.bahceAdi && a.bahce_adi) a.bahceAdi = a.bahce_adi;
+      if(!a.bolgeAdi && a.bolge_adi) a.bolgeAdi = a.bolge_adi;
+    });
     const filYil=document.getElementById('fil-yil').value;
     const filMev=document.getElementById('fil-mevsim').value;
     const filBahce=document.getElementById('fil-bahce').value;
@@ -2321,11 +2367,12 @@ async function loadArsiv(){
       const ico=Object.entries(mevIco).find(([k])=>mev.includes(k))?.[1]||'📋';
       const tarih=new Date(a.tarih).toLocaleDateString('tr-TR');
       const isSel=selectedForCompare.includes(a.id);
+      const adBahce = a.bahceAdi || a.bahce_adi || 'Bahçe';
       return`<div class="ars-card${isSel?' selected':''}" id="ac-${a.id}">
         <div class="ars-head"><span class="ars-mevsim">${ico} ${a.mevsim||'—'}</span><span class="ars-yil">${a.yil}</span></div>
         <div class="ars-body">
-          <div class="ars-bahce">${a.bahceAdi||'Bahçe'}</div>
-          <div class="ars-bolge">${a.bolge_adi||''}</div>
+          <div class="ars-bahce">${adBahce}</div>
+          <div class="ars-bolge">${a.bolge_adi||a.bolgeAdi||''}</div>
           <div class="ars-score-row"><div class="ars-score-num" style="color:${sc}">${puan}</div><div class="ars-score-bar"><div style="width:${puan}%;background:${sc};height:100%;border-radius:99px"></div></div><span style="font-size:.69rem;opacity:.38">/100</span></div>
           <div class="ars-meta"><span>pH ${a.ph_mevcut||'?'}</span><span>${a.organik_madde||'?'}</span><span>${tarih}</span></div>
           <div class="ars-actions">
@@ -2520,7 +2567,6 @@ let sbUrl='', sbKey='';
     const cfg = await res.json();
     if (!cfg.sbUrl) return;
 
-    // Lokalde config yoksa sunucudakini kullan
     if (!sbUrl && cfg.sbUrl) {
       sbUrl = cfg.sbUrl;
       try { localStorage.setItem('sb_config', JSON.stringify({url:sbUrl, key:sbKey})); } catch {}
@@ -2540,11 +2586,17 @@ let sbUrl='', sbKey='';
     if (uyariEl && sbUrl && sbKey) uyariEl.style.display = 'none';
 
     var durEl = document.getElementById('sb-durum');
-    if (durEl && sbUrl && sbKey) durEl.textContent = 'Sunucudan yüklendi — hazır';
+    if (durEl && sbUrl && sbKey) durEl.textContent = 'Bağlantı hazır — Veri Çek veya Gönder butonuna basın';
 
-    // Railway'de çalışıyorsa env var ipucu göster
-    var isRailway = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+    // Railway'de Sync sekmesi zaten açıksa yenile
+    var syncTab = document.getElementById('tab-supabase');
+    if (syncTab && syncTab.classList.contains('active') && sbUrl && sbKey) {
+      sbIstatistik();
+    }
+
+    // Railway env hint
     var hint = document.getElementById('railway-env-hint');
+    var isRailway = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
     if (hint && isRailway) hint.style.display = 'block';
 
     if (sbUrl && sbKey) sbIstatistik();
@@ -2587,24 +2639,35 @@ function sbLog(msg, tip='ok'){
 
 async function sbIstatistik(){
   if(!sbUrl||!sbKey) return;
+  const el = document.getElementById('sb-istatistik');
+  if(!el) return;
+  // Yükleniyor göster
+  el.innerHTML = '<div style="font-size:.78rem;color:rgba(26,18,9,.4);grid-column:1/-1;text-align:center;padding:8px">⏳ Supabase bağlantısı kontrol ediliyor…</div>';
   try{
-    const tabloAdlar = ['analizler','agaclar','verim','tedaviler','aktivite'];
+    const tabloAdlar = ['analizler','agaclar','verim','tedaviler'];
     const sonuclar = await Promise.allSettled(tabloAdlar.map(t=>sbFetch(t,{select:'id'})));
-    const el = document.getElementById('sb-istatistik');
+    const renkler = ['var(--e1)','var(--grn)','var(--g1)','var(--r1)'];
+    const ikonlar = ['🌱','🏡','📈','💊'];
     el.innerHTML = tabloAdlar.map((t,i)=>{
       const ok = sonuclar[i].status==='fulfilled';
-      const sayi = ok ? sonuclar[i].value?.length || 0 : '!';
-      const renkler = ['var(--e1)','var(--grn)','var(--g1)','var(--r1)','var(--b1)'];
+      const sayi = ok ? (sonuclar[i].value?.length || 0) : '—';
       return `<div style="background:#fff;border:1px solid var(--brd);border-radius:9px;padding:10px;text-align:center;box-shadow:var(--shd)">
-        <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:${renkler[i]}">${sayi}</div>
+        <div style="font-size:1.1rem;margin-bottom:3px">${ikonlar[i]}</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:${ok?renkler[i]:'rgba(26,18,9,.3)'}">${sayi}</div>
         <div style="font-size:.7rem;color:rgba(26,18,9,.42);margin-top:2px">${t}</div>
       </div>`;
     }).join('');
     const durumEl = document.getElementById('sb-durum');
-    if(durumEl) durumEl.textContent = 'Supabase bağlantısı aktif';
+    if(durumEl) durumEl.textContent = '✅ Supabase bağlantısı aktif';
     const detayEl = document.getElementById('sb-sync-detay');
-    if(detayEl) detayEl.textContent = tabloAdlar.map((t,i)=>{ const ok2=sonuclar[i].status==='fulfilled'; return ok2?`${t}: ${sonuclar[i].value?.length||0}`:''; }).filter(Boolean).join(' · ');
-  }catch(e){ sbLog('İstatistik alınamadı: '+e.message,'err'); }
+    if(detayEl) detayEl.textContent = tabloAdlar.map((t,i)=>{
+      const ok2=sonuclar[i].status==='fulfilled';
+      return ok2?`${t}: ${sonuclar[i].value?.length||0}`:'';
+    }).filter(Boolean).join(' · ');
+  }catch(e){
+    el.innerHTML = `<div style="font-size:.8rem;color:var(--r2);grid-column:1/-1;padding:8px">❌ Supabase bağlantısı kurulamadı: ${e.message}</div>`;
+    sbLog('İstatistik alınamadı: '+e.message,'err');
+  }
 }
 
 // ⬇️ VERİ ÇEK (Supabase → Yerel)
@@ -2639,6 +2702,7 @@ mobTabs.forEach(t=>{
     if(t.dataset.tab==='verim') loadVerim();
     if(t.dataset.tab==='gecmis') loadTedaviGecmis();
     if(t.dataset.tab==='arsiv'){ loadArsiv(); loadTedaviGecmis(); }
+    if(t.dataset.tab==='hastalik') loadTeshisGecmis();
     if(t.dataset.tab==='rapor'){ loadVerim(); var sbr=document.getElementById('supabase-in-rapor'); if(sbr&&sbUrl&&sbKey) sbr.style.display='block'; }
     if(t.dataset.tab==='supabase') initSupabaseTab();
   });
@@ -2726,42 +2790,64 @@ function initSupabaseTab() {
   var logEl  = document.getElementById('sb-log');
   var durEl  = document.getElementById('sb-durum');
 
+  // Anlık değerleri forma yaz
   if(urlEl && sbUrl) urlEl.value = sbUrl;
   if(keyEl && sbKey) keyEl.value = sbKey;
 
-  var yapılandırıldı = !!(sbUrl && sbKey);
-
-  if(uyari) {
-    if(yapılandırıldı){
-      uyari.style.display = 'none';
-    } else {
-      // Sunucudan çekmeyi dene (Railway'de ayarlar sunucuda saklanır)
-      fetch(API + '/api/config').then(function(r){ return r.json(); }).then(function(cfg){
-        if(cfg.sbUrl) { sbUrl=cfg.sbUrl; if(urlEl) urlEl.value=sbUrl; try{localStorage.setItem('sb_config',JSON.stringify({url:sbUrl,key:sbKey}));}catch{} }
-        if(cfg.sbKey) { sbKey=cfg.sbKey; if(keyEl) keyEl.value=sbKey; try{localStorage.setItem('sb_config',JSON.stringify({url:sbUrl,key:sbKey}));}catch{} }
-        if(sbUrl && sbKey){
-          if(uyari) uyari.style.display='none';
-          if(durEl) durEl.textContent='Sunucudan yüklendi — hazır';
-          sbIstatistik();
-        } else {
-          uyari.style.display='block';
-          uyari.innerHTML = window.location.hostname!=='localhost'&&window.location.hostname!=='127.0.0.1'
-            ? '☁️ Railway üzerinden erişiyorsunuz. Supabase URL ve Key\'i girin, <strong>Kaydet</strong>\'e basın. Bir kez kaydedince tüm cihazlara uygulanır.'
-            : '⚠️ Önce URL ve Anon Key girin, <strong>Ayarları Kaydet</strong>\'e basın.';
-        }
-      }).catch(function(){
-        uyari.style.display='block';
-        uyari.innerHTML='⚠️ Önce URL ve Anon Key girin, <strong>Ayarları Kaydet</strong>\'e basın.';
-      });
-      return; // async devam eder
-    }
-  }
-
-  if(yapılandırıldı) {
-    if(logEl) logEl.style.display = 'block';
+  // sbUrl/sbKey zaten yüklüyse hazır
+  if(sbUrl && sbKey){
+    if(uyari) uyari.style.display = 'none';
     if(durEl) durEl.textContent = 'Bağlantı hazır — Veri Çek veya Gönder butonuna basın';
     sbIstatistik();
+    return;
   }
+
+  // Yoksa sunucudan çekmeyi dene (Railway env vars veya config dosyası)
+  if(uyari) {
+    uyari.style.display = 'block';
+    uyari.innerHTML = '⏳ Sunucu yapılandırması kontrol ediliyor…';
+  }
+  if(durEl) durEl.textContent = '';
+
+  fetch(API + '/api/config')
+    .then(function(r){ return r.json(); })
+    .then(function(cfg){
+      if(cfg.sbUrl) {
+        sbUrl = cfg.sbUrl;
+        if(urlEl) urlEl.value = sbUrl;
+        try{ localStorage.setItem('sb_config', JSON.stringify({url:sbUrl, key:sbKey})); }catch{}
+      }
+      if(cfg.sbKey) {
+        sbKey = cfg.sbKey;
+        if(keyEl) keyEl.value = sbKey;
+        try{ localStorage.setItem('sb_config', JSON.stringify({url:sbUrl, key:sbKey})); }catch{}
+      }
+
+      if(sbUrl && sbKey){
+        if(uyari) uyari.style.display = 'none';
+        if(durEl) durEl.textContent = 'Bağlantı hazır — Veri Çek veya Gönder butonuna basın';
+        // Railway env hint göster
+        var hint = document.getElementById('railway-env-hint');
+        var isRailway = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+        if(hint && isRailway) hint.style.display = 'block';
+        sbIstatistik();
+      } else {
+        if(uyari) {
+          uyari.style.display = 'block';
+          var isRailway = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+          uyari.innerHTML = isRailway
+            ? '☁️ Railway\'de Supabase ayarlanmamış. Variables\'a <strong>SB_URL</strong> ve <strong>SB_KEY</strong> ekleyin ya da aşağıya girerek Kaydet\'e basın.'
+            : '⚠️ Önce URL ve Anon Key girin, <strong>Ayarları Kaydet</strong>\'e basın.';
+        }
+        if(durEl) durEl.textContent = '';
+      }
+    })
+    .catch(function(){
+      if(uyari) {
+        uyari.style.display = 'block';
+        uyari.innerHTML = '⚠️ Önce URL ve Anon Key girin, <strong>Ayarları Kaydet</strong>\'e basın.';
+      }
+    });
 }
 
 document.addEventListener('click', function(e) {
@@ -2812,229 +2898,36 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// ⬆️ VERİ GÖNDER (Yerel → Supabase) — client-side, doğru alan adlarıyla
+// ⬆️ VERİ GÖNDER — server-side /api/sync/gonder çağırır
+// Server DB'yi doğrudan okur — tam sonuc objesi, tüm alanlar eksiksiz gider
 async function sbSenkronizeGonder(logEl, durEl){
   function log(msg, tip){ sbLog(msg, tip); }
+  log('⬆️ Veriler hazırlanıyor…', 'info');
+  try {
+    const res = await apiFetch('/api/sync/gonder', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({sbUrl, sbKey})
+    });
+    const d = await res.json();
+    if(d.error) throw new Error(d.error);
 
-  // camelCase → snake_case alan eşlemesi (analizler tablosu)
-  // Tam kolon seti — Supabase şeması destekliyorsa
-  function analizToSbFull(a){
-    const sonuc = a.sonuc || {};
-    return {
-      id             : a.id,
-      bahce_adi      : a.bahceAdi || a.bahce_adi || null,
-      mevsim         : a.mevsim || null,
-      yil            : a.yil || null,
-      tarih          : a.tarih || new Date().toISOString(),
-      bolge_adi      : sonuc.bolge_adi || a.bolge_adi || null,
-      toprak_tipi    : sonuc.toprak_tipi || a.toprak_tipi || null,
-      iklim_tipi     : sonuc.iklim_tipi || a.iklim_tipi || null,
-      genel_puan     : sonuc.genel_puan || a.genel_puan || null,
-      genel_yorum    : sonuc.genel_yorum || a.genel_yorum || null,
-      ph_mevcut      : sonuc.ph_mevcut || a.ph_mevcut || null,
-      ph_ideal       : sonuc.ph_ideal || a.ph_ideal || null,
-      ph_durumu      : sonuc.ph_durumu || a.ph_durumu || null,
-      organik_madde  : sonuc.organik_madde || a.organik_madde || null,
-      drenaj         : sonuc.drenaj || a.drenaj || null,
-      tuzluluk_riski : sonuc.tuzluluk_riski || a.tuzluluk_riski || null,
-      yillik_yagis   : sonuc.yillik_yagis || a.yillik_yagis || null,
-      sonuc_json     : JSON.stringify(sonuc),
-    };
+    // Sonuçları logla
+    const tablolar = ['analizler','agaclar','tedaviler','verim','teshisler'];
+    let toplam = 0;
+    tablolar.forEach(t => {
+      const sayi = d[t] || 0;
+      if(sayi > 0) { log(`   ✅ ${t}: ${sayi} kayıt gönderildi.`, 'ok'); toplam += sayi; }
+      else log(`   ${t}: kayıt yok, atlandı.`, 'info');
+    });
+
+    if(durEl) durEl.textContent = `Son gönderme: ${new Date().toLocaleString('tr-TR')} · ${toplam} kayıt`;
+    log(`✅ Tamamlandı! Toplam ${toplam} kayıt Supabase'e gönderildi.`, 'ok');
+    sbIstatistik();
+  } catch(e) {
+    log(`❌ Hata: ${e.message}`, 'err');
+    if(durEl) durEl.textContent = 'Gönderme başarısız';
   }
-
-  // Minimal kolon seti — her şemada çalışır, detaylar sonuc_json'da
-  // Ultra minimal — sadece tablo şemasında kesinlikle olması gereken kolonlar
-  function analizToSbMin(a){
-    const sonuc = a.sonuc || {};
-    return {
-      id        : a.id,
-      sonuc_json: JSON.stringify(sonuc),
-    };
-  }
-
-  // Orta minimal — tarih + bahce_adi + sonuc_json
-  function analizToSbMid(a){
-    const sonuc = a.sonuc || {};
-    return {
-      id        : a.id,
-      bahce_adi : a.bahceAdi || a.bahce_adi || null,
-      mevsim    : a.mevsim || null,
-      yil       : a.yil || null,
-      tarih     : a.tarih || new Date().toISOString(),
-      sonuc_json: JSON.stringify(sonuc),
-    };
-  }
-
-  // agaclar alan eşlemesi (zaten snake_case, ama kontrol)
-  function agacToSb(a){
-    return {
-      id     : a.id,
-      adi    : a.adi || a.name || null,
-      meyve  : a.meyve || null,
-      yil    : a.yil || null,
-      durum  : a.durum || 'saglikli',
-      notlar : a.notlar || null,
-      lat    : a.lat || null,
-      lon    : a.lon || null,
-    };
-  }
-
-  // tedaviler alan eşlemesi
-  function tedaviToSb(t){
-    return {
-      id               : t.id,
-      ilac             : t.ilac || null,
-      doz              : t.doz || null,
-      uygulama_tarihi  : t.uygulama_tarihi || t.tarih || new Date().toISOString(),
-      notlar           : t.notlar || null,
-      tespit_id        : t.tespit_id || null,
-    };
-  }
-
-  // verim alan eşlemesi
-  function verimToSb(v){
-    return {
-      id          : v.id,
-      meyve       : v.meyve || null,
-      yil         : v.yil || null,
-      gerceklesen : v.gerceklesen || 0,
-      hedef       : v.hedef || null,
-      agac_sayisi : v.agac_sayisi || null,
-      fiyat       : v.fiyat || null,
-      notlar      : v.notlar || null,
-    };
-  }
-
-  const adimlar = [
-    {
-      ad: 'analizler',
-      fetchUrl: '/api/arsiv',
-      mapFn: analizToSbFull,
-      mapFnMin: analizToSbMin,
-      parse: (d) => d.analizler || [],
-    },
-    {
-      ad: 'agaclar',
-      fetchUrl: '/api/agaclar',
-      mapFn: agacToSb,
-      parse: (d) => Array.isArray(d) ? d : [],
-    },
-    {
-      ad: 'tedaviler',
-      fetchUrl: '/api/tedavi',
-      mapFn: tedaviToSb,
-      parse: (d) => Array.isArray(d) ? d : [],
-    },
-    {
-      ad: 'verim',
-      fetchUrl: '/api/verim',
-      mapFn: verimToSb,
-      parse: (d) => Array.isArray(d) ? d : [],
-    },
-  ];
-
-  // Batch upsert: PGRST204 hatası gelince hata mesajından kolon adını parse eder,
-  // o kolonu çıkarır ve tekrar dener — şema ne olursa olsun çalışır.
-  async function sbUpsertSmart(tablo, kayitlar, minKayitlar, log){
-    const BATCH = 50;
-
-    async function gonderBatch(parca){
-      const res = await fetch(sbUrl + '/rest/v1/' + tablo, {
-        method: 'POST',
-        headers: {
-          'apikey': sbKey, 'Authorization': 'Bearer ' + sbKey,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates,return=minimal'
-        },
-        body: JSON.stringify(parca)
-      });
-      if(!res.ok){
-        const err = await res.text();
-        throw Object.assign(new Error('Supabase ' + tablo + ': ' + res.status + ' ' + err), {sbRaw: err});
-      }
-    }
-
-    // Gönderilecek kayıt kümesini başlat
-    let aktifKayitlar = kayitlar;
-    let mod = 'tam';
-    const cikarilanKolonlar = [];
-
-    // PGRST204 döngüsü — her turda bir kolon çıkararak dener (max 15 tur)
-    for(let tur = 0; tur < 15; tur++){
-      try {
-        // İlk batch ile test et
-        await gonderBatch(aktifKayitlar.slice(0, Math.min(BATCH, aktifKayitlar.length)));
-        // Başarılı → kalanları gönder
-        for(let i = BATCH; i < aktifKayitlar.length; i += BATCH){
-          await gonderBatch(aktifKayitlar.slice(i, i + BATCH));
-        }
-        if(cikarilanKolonlar.length > 0){
-          log(`   ✅ ${tablo}: ${aktifKayitlar.length} kayıt gönderildi (çıkarılan kolonlar: ${cikarilanKolonlar.join(', ')})`, 'ok');
-        }
-        return { sayi: aktifKayitlar.length, mod };
-      } catch(e) {
-        if(!e.sbRaw || !e.sbRaw.includes('PGRST204')) throw e; // Farklı hata — yeniden fırlat
-
-        // PGRST204: hata mesajından kolon adını çıkar
-        // Örn: "Could not find the 'genel_puan' column of 'analizler'"
-        const kolonMatch = e.sbRaw.match(/'([^']+)'\s+column of/);
-        if(!kolonMatch) {
-          // Kolon adı parse edilemedi — ultra minimal'e geç
-          if(minKayitlar){
-            log(`   ⚠️ Şema uyumsuzluğu — en minimal moda geçiliyor (id + sonuc_json)…`, 'info');
-            try {
-              for(let i=0; i<minKayitlar.length; i+=BATCH) await gonderBatch(minKayitlar.slice(i,i+BATCH));
-              return { sayi: minKayitlar.length, mod: 'ultra-minimal' };
-            } catch(e2) { throw e2; }
-          }
-          throw e;
-        }
-
-        const eksikKolon = kolonMatch[1];
-        cikarilanKolonlar.push(eksikKolon);
-        mod = 'uyarlanmış';
-        log(`   ⚠️ '${eksikKolon}' kolonu yok — çıkarılıyor ve tekrar deneniyor…`, 'info');
-
-        // O kolonu tüm kayıtlardan sil
-        aktifKayitlar = aktifKayitlar.map(k => {
-          const yeni = {...k};
-          delete yeni[eksikKolon];
-          return yeni;
-        });
-      }
-    }
-    throw new Error('Maksimum kolon çıkarma turuna ulaşıldı');
-  }
-
-  let toplamGonderilen = 0;
-  let hatalar = [];
-
-  for(const adim of adimlar){
-    log(`⬆️ ${adim.ad} gönderiliyor…`, 'info');
-    try{
-      const res = await apiFetch(adim.fetchUrl);
-      const raw = await res.json();
-      const kayitlar = adim.parse(raw);
-      if(!kayitlar.length){ log(`   ${adim.ad}: yerel kayıt yok, atlandı.`, 'info'); continue; }
-      const mapped = kayitlar.map(adim.mapFn);
-      const minMapped = adim.mapFnMin ? kayitlar.map(adim.mapFnMin) : null;
-      const sonuc = await sbUpsertSmart(adim.ad, mapped, minMapped, log);
-      toplamGonderilen += sonuc.sayi;
-      log(`   ✅ ${adim.ad}: ${sonuc.sayi} kayıt gönderildi${sonuc.mod === 'minimal' ? ' (minimal mod — sonuc_json kullanıldı)' : ''}.`, 'ok');
-    } catch(e){
-      const hata = `${adim.ad}: ${e.message}`;
-      hatalar.push(hata);
-      log(`   ❌ ${hata}`, 'err');
-    }
-  }
-
-  if(durEl) durEl.textContent = `Son gönderme: ${new Date().toLocaleString('tr-TR')} · ${toplamGonderilen} kayıt`;
-  if(hatalar.length === 0){
-    log(`✅ Tamamlandı! Toplam ${toplamGonderilen} kayıt Supabase\'e gönderildi.`, 'ok');
-  } else {
-    log(`⚠️ Kısmen tamamlandı: ${toplamGonderilen} kayıt gönderildi, ${hatalar.length} tablo hatalı.`, 'err');
-  }
-  sbIstatistik();
 }
 
 // ⬇️ VERİ ÇEK (Supabase → sunucu) — backend endpoint üzerinden
