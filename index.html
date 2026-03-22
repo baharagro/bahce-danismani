@@ -1083,7 +1083,8 @@ async function apiFetch(url, opts={}) {
   const headers = {'Content-Type':'application/json', ...(opts.headers||{})};
   try {
     const controller = new AbortController();
-    const tid = setTimeout(()=>controller.abort(), 15000);
+    const timeoutMs = opts.timeout || (url.includes('toprak-pdf') || url.includes('teshis') || url.includes('karsilastir') ? 90000 : 20000);
+    const tid = setTimeout(()=>controller.abort(), timeoutMs);
     const res = await fetch(API + url, {...opts, headers, signal: controller.signal});
     clearTimeout(tid);
     return res;
