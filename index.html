@@ -344,9 +344,9 @@ main{max-width:900px;margin:0 auto;padding:18px 14px 60px}
 .loc-sonuc-item .lsi-txt{flex:1;line-height:1.4}
 .loc-sonuc-item .lsi-krd{font-size:.7rem;color:rgba(26,18,9,.35);margin-top:1px}
 /* HAVA YORUM */
-.hava-yorum-kart{background:linear-gradient(135deg,#0f3460,#1a5c8b);color:#fff;border-radius:11px;padding:16px 18px;margin-bottom:13px}
-.hava-yorum-baslik{font-family:"Fraunces",serif;font-size:1rem;font-weight:700;margin-bottom:10px;opacity:.9}
-.hava-yorum-txt{font-size:.86rem;line-height:1.7;opacity:.85;margin-bottom:12px}
+.hava-yorum-kart{background:#fff;border:1px solid var(--brd);border-radius:11px;padding:16px 18px;margin-bottom:13px;box-shadow:var(--shd)}
+.hava-yorum-baslik{font-family:"Fraunces",serif;font-size:1rem;font-weight:700;margin-bottom:10px;color:var(--ink)}
+.hava-yorum-txt{font-size:.86rem;line-height:1.7;margin-bottom:12px;color:rgba(26,18,9,.7)}
 .ilaclama-grid{display:flex;gap:7px;flex-wrap:wrap}
 .ilaclama-chip{padding:5px 11px;border-radius:99px;font-size:.76rem;font-weight:600;border:1.5px solid rgba(255,255,255,.3)}
 .ilaclama-chip.uygun{background:rgba(46,213,115,.2);border-color:rgba(46,213,115,.5)}
@@ -428,6 +428,48 @@ main{max-width:900px;margin:0 auto;padding:18px 14px 60px}
 .sb-log-zaman{opacity:.5;flex-shrink:0}
 .sb-ok{color:#a8ff78}.sb-err{color:#ff7675}.sb-info{color:#74b9ff}
 
+/* TARIMSAL RİSK */
+.tarim-risk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;margin-bottom:4px}
+.risk-kart{border-radius:10px;padding:12px;text-align:center;border:1px solid transparent}
+.risk-kart.yok{background:var(--grnbg);border-color:rgba(45,90,39,.15)}
+.risk-kart.dusuk{background:#f0f9e8;border-color:rgba(100,170,60,.2)}
+.risk-kart.orta{background:var(--gbg);border-color:rgba(181,132,58,.2)}
+.risk-kart.yuksek{background:var(--rlt);border-color:rgba(192,57,43,.2)}
+.risk-kart.kritik{background:#2d0a0a;border-color:rgba(192,57,43,.5)}
+.risk-ikon{font-size:1.4rem;margin-bottom:4px;line-height:1}
+.risk-baslik{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+.risk-kart.yok .risk-baslik,.risk-kart.dusuk .risk-baslik{color:var(--grn)}
+.risk-kart.orta .risk-baslik{color:#7a4f00}
+.risk-kart.yuksek .risk-baslik,.risk-kart.kritik .risk-baslik{color:var(--r1)}
+.risk-kart.kritik .risk-baslik{color:#ff6b6b}
+.risk-deger{font-size:.72rem;color:rgba(26,18,9,.55);line-height:1.4}
+.risk-kart.kritik .risk-deger{color:rgba(255,255,255,.65)}
+/* İLAÇLAMA KARTI */
+.ilac-gun-kart{border-radius:10px;padding:10px 8px;text-align:center;border:1.5px solid;transition:transform .14s,box-shadow .14s;cursor:default}
+.ilac-gun-kart:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.1)}
+.ilac-gun-kart.uygun{background:#f0faf0;border-color:#7ec87e}
+.ilac-gun-kart.kisitli{background:#fffbf0;border-color:#f0c060}
+.ilac-gun-kart.kisitli-pencere{background:#f0f8ff;border-color:#7ab8e8}
+.ilac-gun-kart.yasak{background:#fff4f4;border-color:#e89090}
+.ilac-gun{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(26,18,9,.45);margin-bottom:2px}
+.ilac-tarih{font-size:.6rem;color:rgba(26,18,9,.32);margin-bottom:5px}
+.ilac-durum-ico{font-size:1.25rem;margin-bottom:3px;line-height:1}
+.ilac-durum-txt{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.ilac-gun-kart.uygun .ilac-durum-txt{color:#2a7a2a}
+.ilac-gun-kart.kisitli .ilac-durum-txt{color:#8a6000}
+.ilac-gun-kart.kisitli-pencere .ilac-durum-txt{color:#1a5c8b}
+.ilac-gun-kart.yasak .ilac-durum-txt{color:#b84040}
+.ilac-sebepler{font-size:.58rem;color:rgba(26,18,9,.5);margin-top:4px;line-height:1.5;text-align:center}
+/* UYARI SEVİYELERİ */
+.uyari-item.acil{background:var(--rlt);border-color:rgba(192,57,43,.28);color:var(--r2)}
+.uyari-item.bilgi{background:var(--bbg);border-color:rgba(26,92,139,.18);color:#1a3a6b}
+.uyari-item.tavsiye{background:var(--grnbg);border-color:rgba(45,90,39,.15);color:var(--grn)}
+/* SULAMA */
+.sulama-kart{background:#fff;border:1px solid var(--brd);border-radius:9px;padding:11px 14px;display:flex;gap:10px;align-items:flex-start;margin-bottom:7px}
+.sulama-ico{font-size:1.2rem;flex-shrink:0}
+.sulama-txt{font-size:.82rem;line-height:1.6;color:rgba(26,18,9,.68)}
+.sulama-txt strong{color:var(--b1);display:block;font-size:.75rem;margin-bottom:2px}
+
 footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13px 22px;font-style:italic;border-top:1px solid var(--brd)}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-thumb{background:rgba(139,26,26,.18);border-radius:99px}
@@ -441,7 +483,6 @@ footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13p
     <div class="logo">🌿</div>
     <div class="htxt"><h1>Bahçe Danışmanı</h1><p>Yapay Zeka Destekli Meyve Bahçesi Yönetim Sistemi v3.0</p></div>
     <div class="hpill"><div class="dot"></div> Sunucu Aktif</div>
-    </div>
   </div>
 </header>
 
@@ -713,8 +754,6 @@ footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13p
 </div>
 
 <!-- ══ YABANİ OT ══ -->
-  </div>
-
 </div>
 
 <div class="tab-panel" id="tab-yabani-ot">
@@ -771,23 +810,31 @@ footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13p
   <div class="card lcard" id="hava-loader"><div class="lwrap"><div class="spin" style="border-top-color:#2d7dd2"></div><div class="lt">Hava verileri alınıyor…</div></div></div>
   <div class="card rcard" id="hava-result">
     <div id="hava-anlik-wrap"></div>
+    <!-- TARIMSAL RİSK SKORKART -->
+    <div id="tarim-risk-wrap" style="margin-bottom:13px"></div>
+    <!-- İLAÇLAMA TAKVİMİ -->
     <div id="hava-yorum-wrap" style="display:none">
       <div class="hava-yorum-kart">
-        <div class="hava-yorum-baslik">🌾 Tarımsal Hava Yorumu</div>
+        <div class="hava-yorum-baslik">🧪 İlaçlama Uygunluk Takvimi — 14 Gün</div>
         <div class="hava-yorum-txt" id="hava-genel-yorum"></div>
-        <div style="margin-bottom:6px;font-size:.75rem;opacity:.75;font-weight:600">İlaçlama Uygunluk Takvimi:</div>
-        <table class="ilaclama-tablo" id="ilaclama-tablo">
-          <thead><tr><th>Gün</th><th>Tarih</th><th>Durum</th></tr></thead>
-          <tbody></tbody>
-        </table>
+        <div id="ilaclama-karti-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;margin-top:10px"></div>
       </div>
     </div>
-    <div class="slabel" style="margin-bottom:10px">📅 16 Günlük Tahmin</div>
-    <div class="tahmin-grid" id="tahmin-grid"></div>
-    <div id="hava-uyari-wrap" style="display:none">
+    <!-- TARIMSAL UYARILAR -->
+    <div id="hava-uyari-wrap" style="display:none;margin-bottom:13px">
       <div class="slabel" style="margin-bottom:10px">⚠️ Tarımsal Uyarılar</div>
       <div class="uyari-listesi" id="uyari-listesi"></div>
     </div>
+    <!-- SULAMA TAVSİYESİ -->
+    <div id="sulama-wrap" style="display:none;margin-bottom:13px">
+      <div class="slabel" style="margin-bottom:10px">💧 Sulama Tavsiyesi</div>
+      <div id="sulama-icerik"></div>
+    </div>
+    <!-- 16 GÜNLÜK TAHMİN -->
+    <div class="slabel" style="margin-bottom:10px">📅 16 Günlük Tahmin</div>
+    <div class="tahmin-grid" id="tahmin-grid"></div>
+    <!-- DETAY KARTLAR -->
+    <div id="hava-extra-detay" style="margin-top:13px"></div>
   </div>
 </div>
 
@@ -917,6 +964,8 @@ footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13p
     <div id="rapor-verim"></div>
     <div class="slabel" style="margin:14px 0 10px">💊 Uygulanan Tedaviler</div>
     <div id="rapor-tedavi"></div>
+  </div><!-- /rapor-result -->
+
   <div class="card" style="margin-top:13px">
     <div class="slabel">🔬 Teşhis Geçmişi</div>
     <div class="hgrid" id="hgrid"><div class="hempty">Henüz analiz yapılmadı</div></div>
@@ -925,7 +974,7 @@ footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13p
     <div class="slabel">💊 Tedavi Geçmişi</div>
     <div id="tedavi-gecmis"><div class="hempty">Henüz tedavi kaydı yok</div></div>
   </div>
-</div>
+</div><!-- /tab-rapor -->
 
 <!-- ══ GEÇMİŞ paneli Arşiv sekmesine taşındı ══ -->
 
@@ -938,6 +987,15 @@ footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13p
       <a href="https://supabase.com" target="_blank" style="color:var(--b1);font-weight:600">supabase.com</a> adresinden ücretsiz proje oluşturun →
       <strong>Settings → API</strong> sayfasından <strong>Project URL</strong> ve <strong>anon public key</strong>'i kopyalayıp aşağıya yapıştırın.
     </p>
+
+    <!-- Railway kalıcı config uyarısı -->
+    <div id="railway-env-hint" style="display:none;background:var(--bbg);border:1px solid rgba(26,92,139,.18);border-radius:9px;padding:12px 14px;font-size:.82rem;color:#0f2d4a;margin-bottom:14px;line-height:1.65">
+      <div style="font-weight:600;margin-bottom:6px">☁️ Railway Kalıcı Ayar</div>
+      Ayarları Railway'de kalıcı yapmak için <strong>Variables</strong> bölümüne şunları ekleyin:
+      <div style="background:#1a1209;color:#a8ff78;border-radius:7px;padding:8px 12px;font-family:monospace;font-size:.76rem;margin:8px 0;white-space:pre">SB_URL  = https://xxxx.supabase.co
+SB_KEY  = eyJhbGci...</div>
+      Env variable tanımlıysa her yeniden başlatmada otomatik yüklenir.
+    </div>
 
     <label style="font-size:.72rem;font-weight:600;color:rgba(26,18,9,.45);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px">🔗 Project URL</label>
     <input type="text" id="sb-url"
@@ -962,7 +1020,8 @@ footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13p
       <button id="sb-cek-btn" class="btn btn-blue" style="width:auto;margin-top:0;padding:11px 22px;flex:1">⬇️ Veri Çek</button>
       <button id="sb-gonder-btn" class="btn btn-earth" style="width:auto;margin-top:0;padding:11px 22px;flex:1">⬆️ Veri Gönder</button>
     </div>
-    <div id="sb-durum" style="font-size:.8rem;color:rgba(26,18,9,.45);margin-bottom:10px" id="sb-son-sync">Henüz senkronize edilmedi</div>
+    <div id="sb-durum" style="font-size:.8rem;color:rgba(26,18,9,.45);margin-bottom:4px">Henüz senkronize edilmedi</div>
+    <div id="sb-sync-detay" style="font-size:.75rem;color:rgba(26,18,9,.35);margin-bottom:10px"></div>
     <div id="sb-log" style="background:#1a1209;color:#a8ff78;border-radius:9px;padding:12px 14px;font-family:monospace;font-size:.78rem;line-height:1.7;min-height:70px;max-height:220px;overflow-y:auto;white-space:pre-wrap;display:none"></div>
     <div id="sb-istatistik" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:11px"></div>
   </div>
@@ -978,7 +1037,7 @@ footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13p
     <button class="mob-tab" data-tab="toprak"><span class="mt-ico">🌱</span><span class="mt-lbl">Toprak</span></button>
     <button class="mob-tab" data-tab="hava"><span class="mt-ico">🌤️</span><span class="mt-lbl">Hava</span></button>
     <button class="mob-tab" data-tab="harita"><span class="mt-ico">🗺️</span><span class="mt-lbl">Harita</span></button>
-    <button class="mob-tab" data-tab="arsiv"><span class="mt-ico">📂</span><span class="mt-lbl">Arşiv</span></button>
+    <button class="mob-tab" data-tab="supabase"><span class="mt-ico">☁️</span><span class="mt-lbl">Sync</span></button>
     <button class="mob-tab" data-tab="diger-menu"><span class="mt-ico">⋯</span><span class="mt-lbl">Diğer</span></button>
   </div>
 </div>
@@ -988,7 +1047,7 @@ footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13p
     <button class="mob-tab" data-tab="yabani-ot" style="min-width:unset"><span class="mt-ico">🌾</span><span class="mt-lbl">Ot</span></button>
     <button class="mob-tab" data-tab="takvim" style="min-width:unset"><span class="mt-ico">📅</span><span class="mt-lbl">Takvim</span></button>
     <button class="mob-tab" data-tab="rapor" style="min-width:unset"><span class="mt-ico">📑</span><span class="mt-lbl">Rapor</span></button>
-    <button class="mob-tab" data-tab="supabase" style="min-width:unset"><span class="mt-ico">☁️</span><span class="mt-lbl">Sync</span></button>
+    <button class="mob-tab" data-tab="arsiv" style="min-width:unset"><span class="mt-ico">📂</span><span class="mt-lbl">Arşiv</span></button>
   </div>
 </div>
 <!-- PWA INSTALL BANNER -->
@@ -1008,11 +1067,32 @@ footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13p
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const API = window.location.origin === 'http://localhost:3000' ? 'http://localhost:3000' : window.location.origin;
+// API URL: Railway'de window.location kökenini kullan, localhost'ta sabit
+const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:' + (window.location.port || '3000')
+  : window.location.origin;
 
 async function apiFetch(url, opts={}) {
   const headers = {'Content-Type':'application/json', ...(opts.headers||{})};
-  return fetch(API + url, {...opts, headers});
+  try {
+    const controller = new AbortController();
+    const tid = setTimeout(()=>controller.abort(), 15000);
+    const res = await fetch(API + url, {...opts, headers, signal: controller.signal});
+    clearTimeout(tid);
+    return res;
+  } catch(e) {
+    if(e.name === 'AbortError') throw new Error('Sunucu yanıt vermedi (zaman aşımı). node server.js çalışıyor mu?');
+    throw new Error('Sunucuya bağlanılamadı. node server.js çalışıyor mu? (' + e.message + ')');
+  }
+}
+
+// Body'yi bir kez okur; hata durumunda anlamlı mesaj fırlatır
+async function apiJson(url, opts={}) {
+  const res = await apiFetch(url, opts);
+  const d = await res.json().catch(()=>({error:'Geçersiz sunucu yanıtı'}));
+  if(!res.ok) throw new Error(d?.error || 'Sunucu hatası: ' + res.status);
+  if(d.error) throw new Error(d.error);
+  return d;
 }
 
 let selMeyve='seftali', selType='genel';
@@ -1182,10 +1262,8 @@ hBtn.addEventListener('click',async()=>{
   startLoader('h');
   try{
     const fotograflar=hFotos.map(f=>f.b64);
-    const res=await apiFetch('/api/teshis',{method:'POST',headers:{'Content-Type':'application/json'},
+    const d=await apiJson('/api/teshis',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({fotograflar,mimeType:'image/jpeg',fotografTuru:selType,meyve:selMeyve,sesYazisi})});
-    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error||'Hata '+res.status);}
-    const d=await res.json(); if(d.error) throw new Error(d.error);
     stopLoader('h'); renderHastalik(d);
     if(hFotos[0]) addImgHist(hFotos[0].dataUrl, d.tespit||selMeyve);
   }catch(e){stopLoader('h');showErr('h-err','Hata: '+e.message);}
@@ -1255,10 +1333,8 @@ document.getElementById('k-btn').addEventListener('click',async()=>{
   document.getElementById('k-result').classList.remove('show');
   startLoader('k');
   try{
-    const res=await apiFetch('/api/karsilastir',{method:'POST',headers:{'Content-Type':'application/json'},
+    const d=await apiJson('/api/karsilastir',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({foto1:kB64_1,foto2:kB64_2,meyve:document.getElementById('k-meyve').value,aralikGun:parseInt(document.getElementById('k-aralik').value)})});
-    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error||'Hata '+res.status);}
-    const d=await res.json(); if(d.error) throw new Error(d.error);
     stopLoader('k'); renderKarsilastir(d);
   }catch(e){stopLoader('k');showErr('k-err','Hata: '+e.message);}
   document.getElementById('k-btn').disabled=false;
@@ -1301,9 +1377,7 @@ document.getElementById('t-abtn').addEventListener('click',async()=>{
   document.getElementById('t-result').classList.remove('show'); startLoader('t');
   try{
     const body={lat:locLat,lon:locLon,bahceAdi:document.getElementById('sf-bahce').value,yil:document.getElementById('sf-yil').value,mevsim:document.getElementById('sf-mevsim').value,sulama:document.getElementById('sf-sulama').value,gubre:document.getElementById('sf-gubre').value,sorun:document.getElementById('sf-sorun').value};
-    const res=await apiFetch('/api/toprak',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error||'Hata '+res.status);}
-    const d=await res.json(); if(d.error) throw new Error(d.error);
+    const d=await apiJson('/api/toprak',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     stopLoader('t'); document.getElementById('t-save-note').textContent=d._kaydedildi?'✅ Kaydedildi':'';
     renderToprak(d,'t');
   }catch(e){stopLoader('t');showErr('t-err','Hata: '+e.message);}
@@ -1331,9 +1405,7 @@ pdfBtn.addEventListener('click',async()=>{
   document.getElementById('pdf-result').classList.remove('show'); startLoader('pdf');
   try{
     const body={pdfBase64:pdfB64,bahceAdi:document.getElementById('pdf-bahce').value,yil:document.getElementById('pdf-yil').value,mevsim:document.getElementById('pdf-mevsim').value,sulama:document.getElementById('pdf-sulama').value,gubre:document.getElementById('pdf-gubre').value,sorun:document.getElementById('pdf-sorun').value};
-    const res=await apiFetch('/api/toprak-pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error||'Hata '+res.status);}
-    const d=await res.json(); if(d.error) throw new Error(d.error);
+    const d=await apiJson('/api/toprak-pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     stopLoader('pdf'); document.getElementById('pdf-save-note').textContent=d._kaydedildi?'✅ Kaydedildi':'';
     if(d.pdf_ozeti){document.getElementById('pdf-ozet-txt').textContent=d.pdf_ozeti;document.getElementById('pdf-ozet').classList.add('show');}
     renderToprak(d,'pdf');
@@ -1404,9 +1476,7 @@ otBtn.addEventListener('click',async()=>{
   document.getElementById('ot-result').classList.remove('show'); startLoader('ot');
   try{
     const body={imageBase64:otImgB64,mimeType:'image/jpeg',bahceTipi:document.getElementById('ot-bahce-tipi').value,sulama:document.getElementById('ot-sulama').value,toprakTipi:document.getElementById('ot-toprak').value};
-    const res=await apiFetch('/api/yabani-ot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error||'Hata '+res.status);}
-    const d=await res.json(); if(d.error) throw new Error(d.error);
+    const d=await apiJson('/api/yabani-ot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     stopLoader('ot'); renderOt(d);
   }catch(e){stopLoader('ot');showErr('ot-err','Hata: '+e.message);}
   otBtn.disabled=false;
@@ -1458,60 +1528,549 @@ const wmoIco={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️
 const yonAd=d=>{if(d===null||d===undefined)return''; const y=['K','KD','D','GD','G','GB','B','KB']; return y[Math.round(d/45)%8]||'';};
 function renderHava(d){
   const cur=d.anlik||{};
+  const tahmin=d.tahmin||[];
   const ruzgarYon=yonAd(cur.ruzgarYon);
+
+  // ── Anlık Durum — iOS/Foreca tarzı ─────────────────────────────────────
+  const isGece = cur.kod===0 && cur.sicaklik!==undefined && false; // gündüz/gece distinctions
+  const hasSun = [0,1].includes(cur.kod);
+  const hasCld = [2,3].includes(cur.kod);
+  const hasRain = [51,53,55,61,63,65,80,81,82].includes(cur.kod);
+  const hasStorm = [95,96,99].includes(cur.kod);
+  const hasSnow = [71,73,75,85,86].includes(cur.kod);
+  const hasFog = [45,48].includes(cur.kod);
+
+  // Gradient arka plan koda göre
+  const gradBg = hasStorm ? 'linear-gradient(160deg,#1a2040 0%,#2d3a6b 60%,#4a3060 100%)'
+    : hasSnow ? 'linear-gradient(160deg,#d0e8f8 0%,#e8f4fd 60%,#f0f8ff 100%)'
+    : hasFog ? 'linear-gradient(160deg,#8a9aaa 0%,#b0c0cc 100%)'
+    : hasRain ? 'linear-gradient(160deg,#2a3f5f 0%,#3d5a80 60%,#4a6890 100%)'
+    : hasCld ? 'linear-gradient(160deg,#4a6080 0%,#6a8aa8 60%,#8aaac8 100%)'
+    : hasSun ? 'linear-gradient(160deg,#1a6eb5 0%,#2b88d9 45%,#4fa0e8 100%)'
+    : 'linear-gradient(160deg,#2860a0 0%,#3a78c8 100%)';
+
+  const txtClr = (hasSnow||hasFog) ? '#1a2a3a' : '#ffffff';
+  const txtMuted = (hasSnow||hasFog) ? 'rgba(26,42,58,.6)' : 'rgba(255,255,255,.65)';
+
+  // Günlük min/max (bugün için)
+  const bugün = tahmin[0]||{};
+
   document.getElementById('hava-anlik-wrap').innerHTML=`
-    <div class="hava-anlik">
-      <div class="hava-ico">${wmoIco[cur.kod]||'🌡️'}</div>
-      <div style="flex:1">
-        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
-          <div class="hava-temp">${cur.sicaklik}°C</div>
-          ${cur.hissedilen!==cur.sicaklik?`<div style="font-size:.85rem;opacity:.7">Hissedilen ${cur.hissedilen}°C</div>`:''}
+    <div style="background:${gradBg};border-radius:16px;padding:24px 20px 20px;margin-bottom:14px;position:relative;overflow:hidden;color:${txtClr}">
+      <!-- Dekoratif daire -->
+      <div style="position:absolute;right:-20px;top:-20px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none"></div>
+      <div style="position:absolute;right:20px;top:20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.05);pointer-events:none"></div>
+
+      <!-- Konum + güncelleme -->
+      <div style="font-size:.68rem;color:${txtMuted};margin-bottom:14px;display:flex;align-items:center;gap:5px">
+        📍 <span id="hava-konum-lbl" style="font-weight:600">Hava Durumu</span>
+        ${d.meta?`<span style="margin-left:auto;opacity:.55;font-size:.62rem">${d.meta.guncelleme}</span>`:''}
+      </div>
+
+      <!-- Ana sıcaklık + ikon -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <div style="font-size:4rem;font-family:'Fraunces',serif;font-weight:700;line-height:1;letter-spacing:-2px">${cur.sicaklik!=null?cur.sicaklik+'°':'—'}</div>
+          <div style="font-size:.95rem;margin-top:4px;font-weight:500;color:${txtMuted}">${cur.durum||'—'}</div>
+          ${cur.hissedilen!=null&&cur.hissedilen!==cur.sicaklik?`<div style="font-size:.72rem;color:${txtMuted};margin-top:2px">Hissedilen ${cur.hissedilen}°C</div>`:''}
         </div>
-        <div class="hava-durum">${cur.durum||'—'}</div>
-        <div class="hava-detay">
-          <span class="hd-item">💧 %${cur.nem}</span>
-          <span class="hd-item">💨 ${cur.ruzgar}km/s ${ruzgarYon} ${cur.ruzgarHamle?'(hamle '+cur.ruzgarHamle+'km/s)':''}</span>
-          <span class="hd-item">🌧️ ${cur.yagis}mm</span>
-          ${cur.gorus!=null?`<span class="hd-item">👁️ ${cur.gorus}km</span>`:''}
-          ${cur.basinc?`<span class="hd-item">🔵 ${cur.basinc}hPa</span>`:''}
-          ${cur.bulutluluk!=null?`<span class="hd-item">☁️ %${cur.bulutluluk}</span>`:''}
+        <div style="font-size:4rem;line-height:1;filter:drop-shadow(0 2px 8px rgba(0,0,0,.2))">${wmoIco[cur.kod]||'🌡️'}</div>
+      </div>
+
+      <!-- Günlük min/max -->
+      ${bugün.maxTemp!=null?`<div style="font-size:.78rem;color:${txtMuted};margin-bottom:14px">↑ ${bugün.maxTemp}° &nbsp; ↓ ${bugün.minTemp}°</div>`:''}
+
+      <!-- Detay pill'ler -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="background:rgba(255,255,255,.13);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:6px;font-size:.76rem;backdrop-filter:blur(4px)">
+          <span>💧</span><span>%${cur.nem??'—'}</span>
         </div>
-        ${d.meta?`<div style="font-size:.65rem;opacity:.45;margin-top:6px">Kaynak: ${d.meta.kaynak} · ${d.meta.guncelleme}</div>`:''}
+        <div style="background:rgba(255,255,255,.13);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:6px;font-size:.76rem;backdrop-filter:blur(4px)">
+          <span>💨</span><span>${cur.ruzgar??'—'} km/s ${ruzgarYon}${cur.ruzgarHamle?' ↑'+cur.ruzgarHamle:''}</span>
+        </div>
+        ${(cur.yagis||0)>0?`<div style="background:rgba(255,255,255,.13);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:6px;font-size:.76rem;backdrop-filter:blur(4px)"><span>🌧️</span><span>${cur.yagis}mm</span></div>`:''}
+        ${cur.bulutluluk!=null?`<div style="background:rgba(255,255,255,.13);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:6px;font-size:.76rem;backdrop-filter:blur(4px)"><span>☁️</span><span>%${cur.bulutluluk}</span></div>`:''}
+        ${cur.basinc?`<div style="background:rgba(255,255,255,.13);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:6px;font-size:.76rem;backdrop-filter:blur(4px)"><span>🔵</span><span>${cur.basinc}hPa</span></div>`:''}
+        ${cur.gorus!=null?`<div style="background:rgba(255,255,255,.13);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:6px;font-size:.76rem;backdrop-filter:blur(4px)"><span>👁️</span><span>${cur.gorus}km</span></div>`:''}
+      </div>
+    </div>
+
+    <!-- Saatlik çizgi grafiği (sıcaklık trendi) -->
+    <div style="background:#fff;border:1px solid var(--brd);border-radius:12px;padding:14px;margin-bottom:14px;overflow-x:auto;box-shadow:var(--shd)">
+      <div style="font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--g1);margin-bottom:10px">📊 Sıcaklık Trendi (16 Gün)</div>
+      <div style="display:flex;gap:4px;align-items:flex-end;min-width:min-content">
+        ${(()=>{
+          const pts=tahmin.slice(0,16);
+          if(!pts.length) return '';
+          const allMax=pts.map(t=>t.maxTemp||0);
+          const allMin=pts.map(t=>t.minTemp||0);
+          const globalMax=Math.max(...allMax);
+          const globalMin=Math.min(...allMin);
+          const range=globalMax-globalMin||1;
+          return pts.map(t=>{
+            const h=Math.max(8,Math.round(((t.maxTemp||0)-globalMin)/range*52));
+            const hMin=Math.max(4,Math.round(((t.minTemp||0)-globalMin)/range*52));
+            const isUygun=ilaclamaDegerlendir(t).durum==='uygun';
+            const isPencere=ilaclamaDegerlendir(t).durum==='kisitli-pencere';
+            return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:32px">
+              <div style="font-size:.55rem;font-weight:700;color:var(--r1)">${t.maxTemp}°</div>
+              <div style="position:relative;width:20px;height:60px;display:flex;flex-direction:column;justify-content:flex-end">
+                <div style="width:100%;height:${h}px;background:linear-gradient(to top,var(--r2),var(--g2));border-radius:4px 4px 0 0;opacity:.75"></div>
+                <div style="position:absolute;bottom:0;width:100%;height:${hMin}px;background:var(--b1);border-radius:4px 4px 0 0;opacity:.5"></div>
+              </div>
+              <div style="font-size:.55rem;color:var(--b1)">${t.minTemp}°</div>
+              <div style="font-size:.58rem;font-weight:600;color:rgba(26,18,9,.45)">${t.gun.slice(0,2)}</div>
+              <div style="font-size:.8rem">${isUygun?'💉':isPencere?'🕐':''}</div>
+            </div>`;
+          }).join('');
+        })()}
       </div>
     </div>`;
-  // 16 günlük tahmin
+
+  // Konum etiketini doldur (meta'dan)
+  if(d.meta&&d.meta.konum) {
+    const lbl=document.getElementById('hava-konum-lbl');
+    if(lbl) lbl.textContent=d.meta.konum;
+  }
+
+  // ── Tarımsal Analiz Motoru ───────────────────────────────────────────────
+  const anlik = {
+    sicaklik : cur.sicaklik ?? 20,
+    nem      : cur.nem ?? 50,
+    ruzgar   : cur.ruzgar ?? 0,
+    hamle    : cur.ruzgarHamle ?? 0,
+    yagis    : cur.yagis ?? 0,
+    kod      : cur.kod ?? 0,
+  };
+
+  // İlaçlama için günlük değerlendirme fonksiyonu
+  // durum: 'uygun' | 'kisitli' | 'kisitli-pencere' | 'yasak'
+  function ilaclamaDegerlendir(t){
+    const sebepler=[], kısıtlar=[];
+    let durum='uygun';
+
+    const ruz=t.ruzgarMax||t.ruzgar||0;
+    const yag=t.yagis||0;
+    const yagOlas=t.yagisOlasiligi||0;
+    const nemMax=t.nemMax||t.nem||50;
+    const minT=t.minTemp??t.sicaklik??10;
+    const maxT=t.maxTemp??t.sicaklik??25;
+    const kod=t.kod??0;
+    // Saatlik kuru pencere (backend'den gelen)
+    const pencereler=t.kuruPencereler||[];
+
+    // ── Rüzgar ──────────────────────────────────────────────────────────────
+    if(ruz>30){
+      durum='yasak';
+      sebepler.push(`💨 Rüzgar ${ruz}km/s — sürüklenme riski, ilaçlama yasak`);
+    } else if(ruz>20){
+      if(durum!=='yasak') durum='kisitli';
+      kısıtlar.push(`💨 Rüzgar ${ruz}km/s — sabah 06–09 arası veya akşam tercih edin`);
+    } else if(ruz>12){
+      if(durum!=='yasak') durum='kisitli';
+      kısıtlar.push(`💨 Rüzgar ${ruz}km/s — iri damla meme kullanın`);
+    }
+
+    // ── Yağış ───────────────────────────────────────────────────────────────
+    const hafifCisenteKodlari=[51,53];
+    const yogunYagisKodlari=[55,61,63,65,80,81,82,95,96,99];
+
+    if(yogunYagisKodlari.includes(kod)){
+      // Yoğun yağış ama saatlik pencere var mı?
+      if(pencereler.length>0&&durum!=='yasak'){
+        durum='kisitli-pencere';
+        kısıtlar.push(`🌧️ Yoğun yağış ama ${pencereler.join(' / ')} kuru pencere var`);
+      } else {
+        durum='yasak';
+        sebepler.push(`🌧️ Yoğun yağış — ilaç yıkanır`);
+      }
+    } else if(yag>8){
+      if(pencereler.length>0&&durum!=='yasak'){
+        durum='kisitli-pencere';
+        kısıtlar.push(`🌧️ ${yag}mm yağış, ancak ${pencereler.join(' / ')} kuru`);
+      } else if(durum!=='yasak'){
+        durum='yasak';
+        sebepler.push(`🌧️ Yağış ${yag}mm — ilaç yıkanır`);
+      }
+    } else if(yag>5){
+      if(pencereler.length>0&&durum==='uygun'){
+        durum='kisitli-pencere';
+        kısıtlar.push(`🌧️ ${yag}mm yağış, ${pencereler.join(' / ')} kuru pencere`);
+      } else if(durum!=='yasak'){
+        durum='kisitli';
+        kısıtlar.push(`🌧️ Yağış ${yag}mm — yağış bitince 4 saat bekleyin`);
+      }
+    } else if(hafifCisenteKodlari.includes(kod)||yag>2){
+      // Hafif çisenti → pencere varsa fırsat, yoksa kısıtlı
+      if(pencereler.length>0&&durum==='uygun'){
+        durum='kisitli-pencere';
+        kısıtlar.push(`🌦️ Hafif çisenti, ${pencereler.join(' / ')} kuru pencere mevcut`);
+      } else if(durum==='uygun'){
+        durum='kisitli';
+        kısıtlar.push(`🌦️ Hafif yağış (${yag}mm) — sabah erken saatlerde uygulayın`);
+      }
+    }
+
+    // Yağış olasılığı (yağış yoksa bak)
+    if(yag<=2&&!hafifCisenteKodlari.includes(kod)&&!yogunYagisKodlari.includes(kod)){
+      if(yagOlas>70&&durum==='uygun'){
+        durum='kisitli';
+        kısıtlar.push(`🌦️ Yağış ihtimali %${yagOlas} — sabah erken uygulayın`);
+      } else if(yagOlas>50&&durum==='uygun'){
+        durum='kisitli-pencere';
+        kısıtlar.push(`🌦️ Yağış ihtimali %${yagOlas} — sabah kuru ise fırsat var`);
+      }
+    }
+
+    // ── Sıcaklık ────────────────────────────────────────────────────────────
+    if(maxT>35){
+      if(durum!=='yasak') durum='kisitli';
+      kısıtlar.push(`🌡️ ${maxT}°C — 08:00–10:00 veya 19:00+ saatlerinde uygulayın`);
+    } else if(maxT>30&&durum==='uygun'){
+      durum='kisitli';
+      kısıtlar.push(`🌡️ ${maxT}°C — sabah erken veya akşamı tercih edin`);
+    }
+    if(minT<2){
+      durum='yasak';
+      sebepler.push(`❄️ ${minT}°C — don riski, ilaç etkinliği sıfırlanır`);
+    } else if(minT<6&&durum!=='yasak'){
+      if(durum==='uygun') durum='kisitli';
+      kısıtlar.push(`🌡️ Gece ${minT}°C — bazı ürünler soğukta kristalleşir`);
+    }
+
+    // ── Nem ─────────────────────────────────────────────────────────────────
+    if(nemMax>92&&durum!=='yasak'){
+      if(durum==='uygun') durum='kisitli';
+      kısıtlar.push(`💦 Nem %${nemMax} — kuruma süresi uzar, sabah tercih edin`);
+    } else if(nemMax>85&&durum==='uygun'){
+      durum='kisitli';
+      kısıtlar.push(`💦 Nem %${nemMax} — yüksek, hava sirkülasyonunu takip edin`);
+    }
+
+    // ── Diğer ───────────────────────────────────────────────────────────────
+    if([45,48].includes(kod)&&durum!=='yasak'){
+      if(durum==='uygun') durum='kisitli';
+      kısıtlar.push('🌫️ Sis — görüş mesafesi düşük');
+    }
+    if([71,73,75,85,86].includes(kod)){
+      durum='yasak';
+      sebepler.push('❄️ Kar yağışı — uygulama yapılamaz');
+    }
+
+    return {durum, sebepler, kısıtlar, pencereler};
+  }
+
+  // ── İlaçlama Takvimi (14 gün) ───────────────────────────────────────────
+  const ilacKartlar = tahmin.slice(0,14).map(t=>{
+    const {durum,sebepler,kısıtlar,pencereler} = ilaclamaDegerlendir(t);
+    const ico = durum==='uygun'?'✅':durum==='kisitli-pencere'?'🕐':durum==='kisitli'?'⚠️':'❌';
+    const cssKls = durum;
+    const lblTxt = durum==='uygun'?'UYGUN':durum==='kisitli-pencere'?'PENCERE':durum==='kisitli'?'KISITLI':'YASAK';
+    const sebepler_all=[...sebepler,...kısıtlar];
+    // Kompakt neden
+    const kisaNeden = sebepler_all.length ? sebepler_all.map(s=>{
+      if(s.includes('💨')) return `💨${(t.ruzgarMax||t.ruzgar||0)}`;
+      if(s.includes('🌧️')) return `🌧️${(t.yagis||0).toFixed(0)}mm`;
+      if(s.includes('🌦️')) return s.includes('%') ? `🌦️%${t.yagisOlasiligi}` : `🌦️${(t.yagis||0).toFixed(0)}mm`;
+      if(s.includes('🌡️')) return `🌡️${t.maxTemp||t.minTemp}°`;
+      if(s.includes('❄️')) return `❄️${t.minTemp}°`;
+      if(s.includes('💦')) return `💦%${t.nemMax||t.nem||''}`;
+      if(s.includes('🌫️')) return '🌫️';
+      return '';
+    }).filter(Boolean).slice(0,2).join(' ') : '';
+    // Pencere saatlerini kart altına ekle
+    const pencereTxt = pencereler&&pencereler.length ? `<div style="font-size:.55rem;color:#1a5c8b;margin-top:3px;font-weight:600;line-height:1.35">${pencereler.join('<br>')}</div>` : '';
+    const tooltipTxt = sebepler_all.join(' | ').replace(/"/g,"'") + (pencereler&&pencereler.length?' → '+pencereler.join(', '):'');
+    return `<div class="ilac-gun-kart ${cssKls}" title="${tooltipTxt}">
+      <div class="ilac-gun">${t.gun}</div>
+      <div class="ilac-tarih">${t.tarihFmt||''}</div>
+      <div class="ilac-durum-ico">${ico}</div>
+      <div class="ilac-durum-txt">${lblTxt}</div>
+      ${kisaNeden?`<div class="ilac-sebepler">${kisaNeden}</div>`:''}
+      ${pencereTxt}
+    </div>`;
+  }).join('');
+
+  const uygunSayi = tahmin.slice(0,14).filter(t=>ilaclamaDegerlendir(t).durum==='uygun').length;
+  const yorumMetni = uygunSayi>=10
+    ? `✅ Önümüzdeki 14 günde ilaçlama için koşullar genel olarak elverişli. ${uygunSayi} uygun gün var.`
+    : uygunSayi>=5
+    ? `⚠️ Önümüzdeki 14 günde ${uygunSayi} uygun ilaçlama günü var. Planlamayı dikkatli yapın.`
+    : `❌ Önümüzdeki 14 günde yalnızca ${uygunSayi} uygun gün var. İlaçlamayı ertelemeyi değerlendirin.`;
+
+  document.getElementById('hava-genel-yorum').textContent = yorumMetni;
+  document.getElementById('ilaclama-karti-grid').innerHTML = ilacKartlar;
+  document.getElementById('hava-yorum-wrap').style.display = 'block';
+
+  // ── Tarımsal Risk Analizi ────────────────────────────────────────────────
+  function riskSeviye(deger, esikler){
+    // esikler: [{limit, seviye}] artan sırada
+    for(const e of esikler) if(deger<=e.limit) return e.seviye;
+    return esikler[esikler.length-1].seviye;
+  }
+
+  const yarinT = tahmin[1]||tahmin[0]||{};
+  const haftaYagis = tahmin.slice(0,7).reduce((s,t)=>s+(t.yagis||0),0);
+  const haftaMaxT = Math.max(...tahmin.slice(0,7).map(t=>t.maxTemp||0));
+  const haftaMinT = Math.min(...tahmin.slice(0,7).map(t=>t.minTemp??99));
+  const haftaRuzgar = Math.max(...tahmin.slice(0,7).map(t=>t.ruzgarMax||t.ruzgar||0));
+  const haftaNemMax = Math.max(...tahmin.slice(0,7).map(t=>t.nemMax||t.nem||0));
+  const doloDays = tahmin.slice(0,7).filter(t=>[96,99].includes(t.kod)).length;
+
+  const riskler = [
+    {
+      id:'don',ikon:'🥶',baslik:'Don Riski',
+      seviye: haftaMinT<0?'kritik':haftaMinT<2?'yuksek':haftaMinT<5?'orta':haftaMinT<8?'dusuk':'yok',
+      deger: `Min ${haftaMinT}°C`,
+      aciklama: haftaMinT<0?'Kritik! Çiçek ve meyve dökülümü beklenir':
+                haftaMinT<2?'Hassas dönemde don zararı riski var':
+                haftaMinT<5?'Düşük sıcaklık, ilaçlama etkinliğini düşürür':
+                haftaMinT<8?'Gece serinliği — kaplama ürünleri hazır tutun':'Risk yok'
+    },
+    {
+      id:'sicaklik',ikon:'🌡️',baslik:'Sıcaklık Stresi',
+      seviye: haftaMaxT>40?'kritik':haftaMaxT>35?'yuksek':haftaMaxT>30?'orta':haftaMaxT>25?'dusuk':'yok',
+      deger: `Max ${haftaMaxT}°C`,
+      aciklama: haftaMaxT>40?'Ölümcül sıcaklık — gölgeleme ve yoğun sulama şart':
+                haftaMaxT>35?'Meyve yanığı ve stres — ilaçlamayı sabaha al':
+                haftaMaxT>30?'İlaçlamayı 08:00–10:00 arası yap':
+                haftaMaxT>25?'Normal — akşam saatleri tercih edilebilir':'Sıcaklık uygun'
+    },
+    {
+      id:'ruzgar',ikon:'💨',baslik:'Rüzgar',
+      seviye: haftaRuzgar>40?'kritik':haftaRuzgar>25?'yuksek':haftaRuzgar>15?'orta':haftaRuzgar>10?'dusuk':'yok',
+      deger: `${haftaRuzgar}km/s`,
+      aciklama: haftaRuzgar>40?'Mekanik zarar riski — budanmış ağaçlar kırılabilir':
+                haftaRuzgar>25?'İlaçlama yasak — sürüklenme ve komşu bahçe riski':
+                haftaRuzgar>15?'İlaçlama kısıtlı — sabah erken veya akşam tercih et':
+                haftaRuzgar>10?'Hafif rüzgar — yönüne göre dikkatli uygula':'Sakin, uygun'
+    },
+    {
+      id:'yagis',ikon:'🌧️',baslik:'Yağış Durumu',
+      seviye: haftaYagis>80?'yuksek':haftaYagis>40?'orta':haftaYagis>10?'dusuk':'yok',
+      deger: `${haftaYagis.toFixed(0)}mm/hafta`,
+      aciklama: haftaYagis>80?'Aşırı yağış — fungal hastalık (mildiyö, külleme) riski çok yüksek':
+                haftaYagis>40?'Yoğun yağış — koruyucu fungisit gerekebilir, drenajı kontrol et':
+                haftaYagis>10?'Orta yağış — ilaçlamaları yağış aralarına planla':'Kuru — sulama programını gözden geçir'
+    },
+    {
+      id:'nem',ikon:'💦',baslik:'Nem & Fungal Risk',
+      seviye: haftaNemMax>90?'kritik':haftaNemMax>80?'yuksek':haftaNemMax>70?'orta':haftaNemMax>60?'dusuk':'yok',
+      deger: `Max %${haftaNemMax}`,
+      aciklama: haftaNemMax>90?'Çok yüksek nem — monilya, külleme, botrytis için ideal ortam':
+                haftaNemMax>80?'Yüksek nem — koruyucu fungisit uygula, hava sirkülasyonunu artır':
+                haftaNemMax>70?'Orta nem — hassas çeşitleri takip et':
+                haftaNemMax>60?'Normal nem aralığında':'Düşük nem, fungal risk az'
+    },
+    {
+      id:'dolu',ikon:'🌨️',baslik:'Dolu Riski',
+      seviye: doloDays>=2?'kritik':doloDays===1?'yuksek':'yok',
+      deger: doloDays>0?`${doloDays} gün`:'-',
+      aciklama: doloDays>=2?'Çok yüksek! Dolu ağları kurulmalı — sigorta poliçeni kontrol et':
+                doloDays===1?'Dikkat! Hafta içinde dolu olasılığı var':'Risk yok'
+    },
+  ];
+
+  const riskGrid = riskler.map(r=>`
+    <div class="risk-kart ${r.seviye}">
+      <div class="risk-ikon">${r.ikon}</div>
+      <div class="risk-baslik">${r.baslik}</div>
+      <div style="font-size:.78rem;font-weight:700;margin:2px 0">${r.deger}</div>
+      <div class="risk-deger">${r.aciklama}</div>
+    </div>`).join('');
+
+  const kritikRisk = riskler.find(r=>r.seviye==='kritik');
+  const yuksekRisk = riskler.filter(r=>r.seviye==='yuksek'||r.seviye==='kritik').length;
+
+  document.getElementById('tarim-risk-wrap').innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+      <div class="slabel" style="margin-bottom:0">🌾 Tarımsal Risk Değerlendirmesi — 7 Gün</div>
+      ${kritikRisk?`<span style="background:var(--r1);color:#fff;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:99px">🚨 KRİTİK: ${kritikRisk.baslik}</span>`:
+        yuksekRisk>0?`<span style="background:var(--g1);color:#fff;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:99px">⚠️ ${yuksekRisk} yüksek risk</span>`:
+        `<span style="background:var(--grn);color:#fff;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:99px">✅ Genel uygun</span>`}
+    </div>
+    <div class="tarim-risk-grid">${riskGrid}</div>`;
+
+  // ── Tarımsal Uyarılar (16 günün tamamı taranır) ──────────────────────────
+  const uyarilar = [];
+  const tumTahmin = tahmin.slice(0, 16);
+
+  function gunSonra(t) {
+    const idx = tumTahmin.indexOf(t);
+    return idx <= 0 ? 'Bugün' : idx === 1 ? 'Yarın' : idx + ' gün sonra';
+  }
+  function gunListesi(arr, max) {
+    return arr.slice(0, max).map(t => t.gun + ' ' + (t.tarihFmt||'') + ' (' + gunSonra(t) + ')').join(', ');
+  }
+
+  const kritikGunler = {
+    don           : tumTahmin.filter(t => (t.minTemp??99) < 2),
+    siddetliRuzgar: tumTahmin.filter(t => (t.ruzgarMax||t.ruzgar||0) > 30),
+    ortaRuzgar    : tumTahmin.filter(t => { const r=t.ruzgarMax||t.ruzgar||0; return r>15&&r<=30; }),
+    dolu          : tumTahmin.filter(t => [96,99].includes(t.kod)),
+    asiriSicak    : tumTahmin.filter(t => (t.maxTemp||0) > 35),
+    yogunYagis    : tumTahmin.filter(t => (t.yagis||0) > 15),
+    nemliGunler   : tumTahmin.filter(t => (t.nemMax||t.nem||0) > 80),
+    karYagisi     : tumTahmin.filter(t => [71,73,75,85,86].includes(t.kod)),
+    uvYuksek      : tumTahmin.filter(t => (t.uvMax||0) >= 8),
+    kasirga       : tumTahmin.filter(t => (t.ruzgarMax||t.ruzgar||0) > 50),
+  };
+
+  // 1. Kasırga
+  if(kritikGunler.kasirga.length > 0){
+    const maks=Math.max(...kritikGunler.kasirga.map(t=>t.ruzgarMax||t.ruzgar||0));
+    uyarilar.push({seviye:'acil',ikon:'🌪️',metin:`KASIRGA UYARISI: ${gunListesi(kritikGunler.kasirga,3)} tarihlerinde ${maks} km/s şiddetinde rüzgar bekleniyor. Budanmış ağaçlarda kırılma ve örtü uçması riski. Destek sistemlerini şimdiden kontrol edin.`});
+  }
+  // 2. Şiddetli rüzgar
+  if(kritikGunler.siddetliRuzgar.length > 0){
+    const maks=Math.max(...kritikGunler.siddetliRuzgar.map(t=>t.ruzgarMax||t.ruzgar||0));
+    uyarilar.push({seviye:maks>40?'acil':'orta',ikon:'💨',metin:`Şiddetli rüzgar: ${gunListesi(kritikGunler.siddetliRuzgar,4)}. En yüksek ${maks} km/s. Bu günlerde ilaçlama YASAK — sürüklenme (drift) komşu parsellere ve su kaynaklarına ulaşır. ${kritikGunler.siddetliRuzgar.length>1?kritikGunler.siddetliRuzgar.length+' günlük dönem için ilaçlama planlamasını şimdiden yapın.':''}`});
+  }
+  // 3. Orta rüzgar (şiddetli yoksa)
+  if(kritikGunler.ortaRuzgar.length > 0 && kritikGunler.siddetliRuzgar.length === 0){
+    uyarilar.push({seviye:'bilgi',ikon:'💨',metin:`Rüzgarlı günler: ${gunListesi(kritikGunler.ortaRuzgar,4)}. İlaçlamayı sabah 06:00–09:00 arasına alın, iri damla meme kullanın.`});
+  }
+  // 4. Don
+  if(kritikGunler.don.length > 0){
+    const minT=Math.min(...kritikGunler.don.map(t=>t.minTemp??99));
+    const ilk=kritikGunler.don[0];
+    uyarilar.push({seviye:minT<-2?'acil':'orta',ikon:'🥶',metin:`Don uyarısı: ${gunListesi(kritikGunler.don,3)}. Min ${minT}°C bekleniyor. ${gunSonra(ilk) === 'Bugün'||gunSonra(ilk)==='Yarın'?'ACİL — ':''}Sis sistemleri ve don perdelerini hazırlayın. Çiçeklenme/meyve tutumu dönemindeyseniz kimyasal don önleyicileri değerlendirin.`});
+  }
+  // 5. Kar
+  if(kritikGunler.karYagisi.length > 0){
+    uyarilar.push({seviye:'acil',ikon:'❄️',metin:`Kar yağışı: ${gunListesi(kritikGunler.karYagisi,3)}. Dal bağlama yapın, tünel örtüleri çekin. Kar sonrası budama yaralarını bakırlı macunla kapatın.`});
+  }
+  // 6. Dolu
+  if(kritikGunler.dolu.length > 0){
+    uyarilar.push({seviye:'acil',ikon:'🌨️',metin:`Dolu riski: ${gunListesi(kritikGunler.dolu,3)}. Dolu ağlarını şimdiden kurun — kurulum 1–2 gün alabilir. Sigorta poliçenizi kontrol edin.`});
+  }
+  // 7. Aşırı sıcaklık
+  if(kritikGunler.asiriSicak.length > 0){
+    const maks=Math.max(...kritikGunler.asiriSicak.map(t=>t.maxTemp||0));
+    uyarilar.push({seviye:maks>40?'acil':'orta',ikon:'🌡️',metin:`Aşırı sıcaklık: ${gunListesi(kritikGunler.asiriSicak,4)}. Max ${maks}°C. ${maks>40?'Kritik: gölgeleme ve yoğun sulama şart. ':''}İlaçlamayı 08:00–10:00 veya 19:00 sonrasına alın.`});
+  }
+  // 8. Fungal risk
+  const yogunNemYagis=tumTahmin.filter(t=>(t.nemMax||t.nem||0)>80&&(t.yagis||0)>3);
+  if(yogunNemYagis.length >= 2){
+    uyarilar.push({seviye:'acil',ikon:'🍄',metin:`Fungal hastalık riski: ${gunListesi(yogunNemYagis,4)}. Yüksek nem + yağış kombinasyonu — monilya, külleme, mildiyö, botrytis için ideal ortam. Yağış aralıklarında koruyucu fungisit uygulayın.`});
+  } else if(kritikGunler.nemliGunler.length >= 3){
+    uyarilar.push({seviye:'orta',ikon:'💦',metin:`Yüksek nem: ${gunListesi(kritikGunler.nemliGunler,4)}. Külleme ve gri küf takibi yapın, hava sirkülasyonunu artırın.`});
+  }
+  // 9. Yoğun yağış
+  if(kritikGunler.yogunYagis.length >= 2){
+    const toplam=kritikGunler.yogunYagis.reduce((s,t)=>s+(t.yagis||0),0);
+    uyarilar.push({seviye:'orta',ikon:'🌧️',metin:`Yoğun yağış dönemi: ${gunListesi(kritikGunler.yogunYagis,4)}. Toplam ~${toplam.toFixed(0)}mm. Drenajı kontrol edin. İlaçlamaları yağış aralarına, budamayı kuru günlere planlayın.`});
+  }
+  // 10. UV
+  if(kritikGunler.uvYuksek.length >= 2){
+    uyarilar.push({seviye:'bilgi',ikon:'☀️',metin:`Yüksek UV: ${gunListesi(kritikGunler.uvYuksek,4)}. Açık renkli meyvelerde güneş yanığı riski. Kaolin kaplama değerlendirin. İlaçlamayı 10:00–17:00 arasında yapmayın.`});
+  }
+  // 11. İlaçlama penceresi tükeniyor
+  const gelecek7Uygun=tumTahmin.slice(0,7).filter(t=>ilaclamaDegerlendir(t).durum==='uygun');
+  if(gelecek7Uygun.length <= 1){
+    const ilk14Uygun=tumTahmin.slice(0,14).filter(t=>ilaclamaDegerlendir(t).durum==='uygun');
+    const snrkUygun=ilk14Uygun[0];
+    uyarilar.push({seviye:'orta',ikon:'🧪',metin:`Önümüzdeki 7 günde yalnızca ${gelecek7Uygun.length} uygun ilaçlama günü var. ${snrkUygun?'En yakın uygun gün: '+snrkUygun.gun+' '+( snrkUygun.tarihFmt||'')+' ('+gunSonra(snrkUygun)+').':'14 gün içinde uygun pencere yok.'} Bekleyen ilaçlamalarınızı planlayın.`});
+  }
+  // 12. Kalite fırsatı
+  const kaliteGun=tumTahmin.find(t=>(t.maxTemp-t.minTemp)>=15&&(t.minTemp??99)>5);
+  if(kaliteGun){
+    uyarilar.push({seviye:'tavsiye',ikon:'✨',metin:`Kalite fırsatı: ${kaliteGun.gun} ${kaliteGun.tarihFmt||''} (${gunSonra(kaliteGun)}) ve çevresi — gece-gündüz farkı ${(kaliteGun.maxTemp-kaliteGun.minTemp).toFixed(0)}°C. Meyve renklenmesi ve şeker birikimi için ideal.`});
+  }
+  // 13. Kuraklık (10 günlük)
+  const sonraki10Yagis=tumTahmin.slice(0,10).reduce((s,t)=>s+(t.yagis||0),0);
+  if(sonraki10Yagis<8&&haftaMaxT>22){
+    uyarilar.push({seviye:'bilgi',ikon:'🌵',metin:`10 günlük kuru dönem (~${sonraki10Yagis.toFixed(0)}mm). Meyve büyümesi döneminde sulama programını artırın — damla sulama: 5–8 L/ağaç/gün, sıcak günlerde 10 L'ye çıkın.`});
+  }
+  // 14. Sunucu uyarıları
+  (d.uyarilar||[]).forEach(u=>uyarilar.push({seviye:'bilgi',ikon:'ℹ️',metin:u}));
+
+  if(uyarilar.length){
+    document.getElementById('uyari-listesi').innerHTML=uyarilar.map(u=>`
+      <div class="uyari-item ${u.seviye||''}">
+        <span style="font-size:1rem;flex-shrink:0;margin-top:1px">${u.ikon}</span>
+        <span>${u.metin}</span>
+      </div>`).join('');
+    document.getElementById('hava-uyari-wrap').style.display='block';
+  } else {
+    document.getElementById('hava-uyari-wrap').style.display='none';
+  }
+
+    // ── Sulama Tavsiyesi ─────────────────────────────────────────────────────
+  const sulamaTavsiyeler = [];
+
+  if(haftaYagis>40){
+    sulamaTavsiyeler.push({ikon:'✅',baslik:'Sulama gerekmiyor',metin:`Bu hafta ${haftaYagis.toFixed(0)}mm yağış bekleniyor — yeterli nem sağlanacak. Drenajı kontrol edin, aşırı sulamaktan kaçının.`});
+  } else if(haftaYagis>20){
+    sulamaTavsiyeler.push({ikon:'⚡',baslik:'Azaltılmış sulama',metin:`${haftaYagis.toFixed(0)}mm yağış bekleniyor. Sulama miktarını %50 azaltın. Toprak nem sensörünüz varsa değerleri kontrol edin.`});
+  } else if(haftaMaxT>32){
+    sulamaTavsiyeler.push({ikon:'💧',baslik:'Yoğun sulama gerekli',metin:`Yüksek sıcaklık ve yağışsız hava toprak nemini hızla tüketiyor. Damla sulama: sabah 06:00–08:00 + akşam 19:00–21:00. Meyve ağaçları: 5–8 L/ağaç/gün.`});
+  } else {
+    sulamaTavsiyeler.push({ikon:'💧',baslik:'Normal sulama',metin:`Standart sulama programına devam edin. Toprak 5cm derinliğinde kuruyorsa sulama zamanı gelmiştir. Tercihen sabah erken saatlerde sulayın.`});
+  }
+
+  if(haftaMaxT>30){
+    sulamaTavsiyeler.push({ikon:'⏰',baslik:'Sulama saati',metin:'Sabah 06:00–09:00 veya akşam 19:00 sonrası sulayın. Öğlen sulama buharlaşma kayıplarını artırır, yapraklarda yanık bırakabilir.'});
+  }
+
+  if(sulamaTavsiyeler.length){
+    document.getElementById('sulama-icerik').innerHTML=sulamaTavsiyeler.map(s=>`
+      <div class="sulama-kart">
+        <span class="sulama-ico">${s.ikon}</span>
+        <div class="sulama-txt"><strong>${s.baslik}</strong>${s.metin}</div>
+      </div>`).join('');
+    document.getElementById('sulama-wrap').style.display='block';
+  }
+
+  // ── 16 Günlük Tahmin ─────────────────────────────────────────────────────
   const tg=document.getElementById('tahmin-grid');
-  tg.innerHTML=(d.tahmin||[]).slice(0,16).map(t=>`
-    <div class="tahmin-kart">
-      <div class="tk-gun">${t.gun}</div>
-      <div style="font-size:.62rem;color:rgba(26,18,9,.35);margin-bottom:3px">${t.tarihFmt||''}</div>
+  tg.innerHTML=tahmin.slice(0,16).map(t=>{
+    const {durum}=ilaclamaDegerlendir(t);
+    const ilacIco=durum==='uygun'?'💉':durum==='kisitli-pencere'?'🕐':durum==='kisitli'?'⚠️':'🚫';
+    const ilacRenk=durum==='uygun'?'#2a7a2a':durum==='kisitli-pencere'?'#1a5c8b':durum==='kisitli'?'#8a6000':'#b84040';
+    const isToday=tahmin.indexOf(t)===0;
+    return`<div class="tahmin-kart" style="${isToday?'border-color:var(--b1);background:var(--bbg);':''}" title="İlaçlama: ${durum==='uygun'?'Uygun':durum==='kisitli-pencere'?'Gün içi pencere':durum==='kisitli'?'Kısıtlı':'Yasak'}">
+      <div class="tk-gun" style="${isToday?'color:var(--b1);':''}">${isToday?'Bugün':t.gun}</div>
+      <div style="font-size:.58rem;color:rgba(26,18,9,.3);margin-bottom:3px">${t.tarihFmt||''}</div>
       <div class="tk-ico">${wmoIco[t.kod]||'🌡️'}</div>
       <div class="tk-max">${t.maxTemp}°</div>
       <div class="tk-min">${t.minTemp}°</div>
-      ${t.yagis>0?`<div class="tk-yagis">💧 ${t.yagis}mm${t.yagisOlasiligi!=null?' %'+t.yagisOlasiligi:''}</div>`:''}
-      ${t.ruzgar>20?`<div style="font-size:.63rem;color:#b54a10;margin-top:1px">💨 ${t.ruzgar}</div>`:''}
-      ${t.uvMax>=6?`<div style="font-size:.63rem;color:#e67e22;margin-top:1px">UV ${t.uvMax}</div>`:''}
-    </div>`).join('');
-  // Tarımsal yorum + ilaçlama tablo
-  const yorumWrap=document.getElementById('hava-yorum-wrap');
-  if(d.genelYorum||d.uyarilar?.length){
-    yorumWrap.style.display='block';
-    document.getElementById('hava-genel-yorum').textContent=d.genelYorum||'';
-    const tbody=document.querySelector('#ilaclama-tablo tbody');
-    if(tbody && d.ilaclamaTakvim){
-      tbody.innerHTML=d.ilaclamaTakvim.map(t=>`
-        <tr>
-          <td>${t.gun}</td>
-          <td style="opacity:.75">${t.tarih||''}</td>
-          <td class="${t.uygun?'il-uygun':'il-yasak'}">${t.uygun?'✅ Uygun':'❌ '+(t.sebep||'Uygun değil')}</td>
-        </tr>`).join('');
-    }
-  } else yorumWrap.style.display='none';
-  const uyariWrap=document.getElementById('hava-uyari-wrap');
-  if(d.uyarilar&&d.uyarilar.length){
-    uyariWrap.style.display='block';
-    document.getElementById('uyari-listesi').innerHTML=d.uyarilar.map(u=>`<div class="uyari-item"><span>⚠️</span><span>${u}</span></div>`).join('');
-  } else uyariWrap.style.display='none';
+      ${(t.yagis||0)>0?`<div class="tk-yagis">💧 ${t.yagis}mm${t.yagisOlasiligi!=null?' %'+t.yagisOlasiligi:''}</div>`:''}
+      ${(t.ruzgarMax||t.ruzgar||0)>15?`<div style="font-size:.6rem;color:#b54a10;margin-top:1px">💨${t.ruzgarMax||t.ruzgar}</div>`:''}
+      ${(t.uvMax||0)>=6?`<div style="font-size:.6rem;color:#e67e22;margin-top:1px">UV${t.uvMax}</div>`:''}
+      <div style="font-size:.78rem;margin-top:4px;color:${ilacRenk}">${ilacIco}</div>
+    </div>`;
+  }).join('');
+
+  // ── Ek Detay Kartları ─────────────────────────────────────────────────────
+  const extraWrap = document.getElementById('hava-extra-detay');
+  const extraKartlar = [];
+
+  // Uygun + pencere günleri
+  const uygunGunler = tahmin.slice(0,14).filter(t=>{
+    const {durum}=ilaclamaDegerlendir(t);
+    return durum==='uygun'||durum==='kisitli-pencere';
+  });
+  if(uygunGunler.length>0){
+    extraKartlar.push(`<div class="card" style="padding:14px;background:var(--grnbg);border:1px solid rgba(45,90,39,.15);margin-bottom:0">
+      <div class="slabel" style="margin-bottom:8px;color:var(--grn)">💉 İlaçlama Penceresi (14 Gün)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${uygunGunler.map(t=>{
+          const {durum}=ilaclamaDegerlendir(t);
+          const isPencere=durum==='kisitli-pencere';
+          return `<div style="background:#fff;border:1px solid ${isPencere?'rgba(26,92,139,.3)':'rgba(45,90,39,.2)'};border-radius:8px;padding:6px 11px;font-size:.78rem">
+            <span style="font-weight:600;color:${isPencere?'var(--b1)':'var(--grn)'}">${t.gun}</span>
+            <span style="font-weight:400;opacity:.6;font-size:.72rem"> ${t.tarihFmt||''}</span>
+            ${isPencere?`<span style="font-size:.65rem;color:var(--b1);display:block;margin-top:1px">🕐 Gün içi pencere</span>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="font-size:.72rem;color:rgba(26,18,9,.45);margin-top:10px">💡 💉 = Tam uygun &nbsp;·&nbsp; 🕐 = Gün içi pencere (sabah kuru saatler) &nbsp;·&nbsp; Arıcıları 24 saat önceden bilgilendirin.</div>
+    </div>`);
+  }
+
+  if(extraKartlar.length) extraWrap.innerHTML=extraKartlar.join('');
+
   document.getElementById('hava-result').classList.add('show');
 }
 
@@ -1523,9 +2082,7 @@ document.getElementById('tak-btn').addEventListener('click',async()=>{
     const meyvelerStr=document.getElementById('tak-meyveler').value;
     const meyveler=meyvelerStr?meyvelerStr.split(',').map(m=>m.trim()):[];
     const body={meyveler,bolge:document.getElementById('tak-bolge').value,yil:document.getElementById('tak-yil').value,sulama:document.getElementById('tak-sulama').value,toprakBilgi:document.getElementById('tak-toprak').value};
-    const res=await apiFetch('/api/takvim-olustur',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error||'Hata '+res.status);}
-    const d=await res.json(); if(d.error) throw new Error(d.error);
+    const d=await apiJson('/api/takvim-olustur',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     stopLoader('tak'); renderTakvim(d);
   }catch(e){stopLoader('tak');showErr('tak-err','Hata: '+e.message);}
 });
@@ -1554,7 +2111,13 @@ function renderTakvim(d){
 // ══ HARİTA ══
 function initHarita(){
   if(haritaMap) return;
-  if(typeof L === 'undefined') { console.warn('Leaflet yüklenmedi'); return; }
+  if(typeof L === 'undefined') {
+    // Leaflet henüz yüklenmediyse kısa bekleyip tekrar dene
+    var haritaEl2 = document.getElementById('bahce-harita');
+    if(haritaEl2) haritaEl2.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(26,18,9,.4);font-size:.85rem">🗺️ Harita yükleniyor…</div>';
+    setTimeout(initHarita, 600);
+    return;
+  }
   var haritaEl = document.getElementById('bahce-harita');
   if(!haritaEl) return;
   try {
@@ -1660,7 +2223,11 @@ async function loadAgaclar(){
           </div>
         </div>
       </div>`).join(''):'<div class="hempty">Haritaya tikla veya koordinat girerek bahce ekle</div>';
-  }catch(e){console.error(e);}
+  }catch(e){
+    const liste=document.getElementById('agac-listesi');
+    if(liste) liste.innerHTML='<div class="hempty" style="color:var(--r2)">⚠️ Sunucuya bağlanılamadı — node server.js çalışıyor mu?</div>';
+    document.getElementById('harita-agac-sayisi').textContent='— bahce';
+  }
 }
 async function duzenleBahce(id){
   try{
@@ -1718,9 +2285,13 @@ async function loadVerim(){
         ${v.notlar?`<div style="font-size:.75rem;color:rgba(26,18,9,.45);margin-top:5px">${v.notlar}</div>`:''}
       </div>`;
     }).join('');
-  }catch(e){console.error(e);}
+  }catch(e){
+    const liste=document.getElementById('verim-listesi');
+    if(liste) liste.innerHTML='<div class="hempty" style="color:var(--r2)">⚠️ Sunucuya bağlanılamadı</div>';
+  }
 }
 async function silVerim(id){
+  if(!confirm('Bu verim kaydını silmek istediğinizden emin misiniz?')) return;
   await apiFetch('/api/verim/'+id,{method:'DELETE'}); loadVerim();
 }
 
@@ -1941,6 +2512,46 @@ document.getElementById('agac-modal').addEventListener('click',e=>{if(e.target==
 let sbUrl='', sbKey='';
 (function loadSbConfig(){ try{ const c=JSON.parse(localStorage.getItem('sb_config')||'{}'); sbUrl=c.url||''; sbKey=c.key||''; }catch{} })();
 
+// Backend'den config çek — Railway'de farklı cihazlar otomatik ayarları alır
+(async function loadSbConfigFromServer(){
+  try {
+    const res = await fetch(API + '/api/config');
+    if (!res.ok) return;
+    const cfg = await res.json();
+    if (!cfg.sbUrl) return;
+
+    // Lokalde config yoksa sunucudakini kullan
+    if (!sbUrl && cfg.sbUrl) {
+      sbUrl = cfg.sbUrl;
+      try { localStorage.setItem('sb_config', JSON.stringify({url:sbUrl, key:sbKey})); } catch {}
+    }
+    if (!sbKey && cfg.sbKey) {
+      sbKey = cfg.sbKey;
+      try { localStorage.setItem('sb_config', JSON.stringify({url:sbUrl, key:sbKey})); } catch {}
+    }
+
+    // Formları doldur
+    var urlEl = document.getElementById('sb-url');
+    var keyEl = document.getElementById('sb-key');
+    if (urlEl && sbUrl) urlEl.value = sbUrl;
+    if (keyEl && sbKey) keyEl.value = sbKey;
+
+    var uyariEl = document.getElementById('sb-url-uyari');
+    if (uyariEl && sbUrl && sbKey) uyariEl.style.display = 'none';
+
+    var durEl = document.getElementById('sb-durum');
+    if (durEl && sbUrl && sbKey) durEl.textContent = 'Sunucudan yüklendi — hazır';
+
+    // Railway'de çalışıyorsa env var ipucu göster
+    var isRailway = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+    var hint = document.getElementById('railway-env-hint');
+    if (hint && isRailway) hint.style.display = 'block';
+
+    if (sbUrl && sbKey) sbIstatistik();
+
+  } catch {}
+})();
+
 
 
 
@@ -1966,6 +2577,8 @@ async function sbFetch(tablo, opts={}){
 
 function sbLog(msg, tip='ok'){
   const el = document.getElementById('sb-log');
+  if(!el) return;
+  el.style.display = 'block';
   const zaman = new Date().toLocaleTimeString('tr-TR');
   const cls = tip==='err'?'sb-err':tip==='info'?'sb-info':'sb-ok';
   el.innerHTML += `<span class="sb-log-satir"><span class="sb-log-zaman">[${zaman}]</span> <span class="${cls}">${msg}</span></span>\n`;
@@ -1974,22 +2587,35 @@ function sbLog(msg, tip='ok'){
 
 async function sbIstatistik(){
   if(!sbUrl||!sbKey) return;
+  const el = document.getElementById('sb-istatistik');
+  if(!el) return;
+  // Yükleniyor göster
+  el.innerHTML = '<div style="font-size:.78rem;color:rgba(26,18,9,.4);grid-column:1/-1;text-align:center;padding:8px">⏳ Supabase bağlantısı kontrol ediliyor…</div>';
   try{
-    const tabloAdlar = ['analizler','agaclar','verim','tedaviler','aktivite'];
+    const tabloAdlar = ['analizler','agaclar','verim','tedaviler'];
     const sonuclar = await Promise.allSettled(tabloAdlar.map(t=>sbFetch(t,{select:'id'})));
-    const el = document.getElementById('sb-istatistik');
+    const renkler = ['var(--e1)','var(--grn)','var(--g1)','var(--r1)'];
+    const ikonlar = ['🌱','🏡','📈','💊'];
     el.innerHTML = tabloAdlar.map((t,i)=>{
       const ok = sonuclar[i].status==='fulfilled';
-      const sayi = ok ? sonuclar[i].value?.length || 0 : '!';
-      const renkler = ['var(--e1)','var(--grn)','var(--g1)','var(--r1)','var(--b1)'];
+      const sayi = ok ? (sonuclar[i].value?.length || 0) : '—';
       return `<div style="background:#fff;border:1px solid var(--brd);border-radius:9px;padding:10px;text-align:center;box-shadow:var(--shd)">
-        <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:${renkler[i]}">${sayi}</div>
+        <div style="font-size:1.1rem;margin-bottom:3px">${ikonlar[i]}</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:${ok?renkler[i]:'rgba(26,18,9,.3)'}">${sayi}</div>
         <div style="font-size:.7rem;color:rgba(26,18,9,.42);margin-top:2px">${t}</div>
       </div>`;
     }).join('');
-    document.getElementById('sb-son-sync').textContent = 'Supabase bağlantısı aktif';
-    document.getElementById('sb-sync-detay').textContent = tabloAdlar.map((t,i)=> ok?`${t}: ${sonuclar[i].value?.length||0}`:'').filter(Boolean).join(' · ');
-  }catch(e){ sbLog('İstatistik alınamadı: '+e.message,'err'); }
+    const durumEl = document.getElementById('sb-durum');
+    if(durumEl) durumEl.textContent = '✅ Supabase bağlantısı aktif';
+    const detayEl = document.getElementById('sb-sync-detay');
+    if(detayEl) detayEl.textContent = tabloAdlar.map((t,i)=>{
+      const ok2=sonuclar[i].status==='fulfilled';
+      return ok2?`${t}: ${sonuclar[i].value?.length||0}`:'';
+    }).filter(Boolean).join(' · ');
+  }catch(e){
+    el.innerHTML = `<div style="font-size:.8rem;color:var(--r2);grid-column:1/-1;padding:8px">❌ Supabase bağlantısı kurulamadı: ${e.message}</div>`;
+    sbLog('İstatistik alınamadı: '+e.message,'err');
+  }
 }
 
 // ⬇️ VERİ ÇEK (Supabase → Yerel)
@@ -2086,26 +2712,6 @@ if('serviceWorker' in navigator){
 
 
 
-// Rapor sekmesindeki hızlı sync butonları
-document.addEventListener('click', function(e) {
-  if (e.target && e.target.id === 'sb-cek-btn2') {
-    var log = document.getElementById('sb-log2');
-    if(log){ log.style.display='block'; log.textContent='⬇️ Çekiliyor...\n'; }
-    apiFetch('/api/sync/cek', {method:'POST', body:JSON.stringify({sbUrl:sbUrl, sbKey:sbKey})})
-      .then(function(r){ return r.json(); })
-      .then(function(d){ if(log) log.textContent += '✅ Tamamlandı: ' + JSON.stringify(d); })
-      .catch(function(e){ if(log) log.textContent += '❌ Hata: ' + e.message; });
-  }
-  if (e.target && e.target.id === 'sb-gonder-btn2') {
-    if(!confirm('Yerel veriler Supabase\'e gonderilecek?')) return;
-    var log = document.getElementById('sb-log2');
-    if(log){ log.style.display='block'; log.textContent='⬆️ Gönderiliyor...\n'; }
-    apiFetch('/api/sync/gonder', {method:'POST', body:JSON.stringify({sbUrl:sbUrl, sbKey:sbKey})})
-      .then(function(r){ return r.json(); })
-      .then(function(d){ if(log) log.textContent += '✅ Tamamlandı: ' + JSON.stringify(d); })
-      .catch(function(e){ if(log) log.textContent += '❌ Hata: ' + e.message; });
-  }
-});
 
 // ── Toprak Kaynak Seçici (GPS / PDF) ────────────────────────────────────────
 document.querySelectorAll('#toprak-kaynak-pills .pill').forEach(function(p){
@@ -2128,11 +2734,67 @@ function initSupabaseTab() {
   var urlEl = document.getElementById('sb-url');
   var keyEl = document.getElementById('sb-key');
   var uyari = document.getElementById('sb-url-uyari');
-  var sbLog2 = document.getElementById('sb-log');
+  var logEl  = document.getElementById('sb-log');
+  var durEl  = document.getElementById('sb-durum');
+
+  // Anlık değerleri forma yaz
   if(urlEl && sbUrl) urlEl.value = sbUrl;
   if(keyEl && sbKey) keyEl.value = sbKey;
-  if(uyari) uyari.style.display = (sbUrl && sbKey) ? 'none' : 'block';
-  if(sbUrl && sbKey && sbLog2) sbLog2.style.display = 'block';
+
+  // sbUrl/sbKey zaten yüklüyse hazır
+  if(sbUrl && sbKey){
+    if(uyari) uyari.style.display = 'none';
+    if(durEl) durEl.textContent = 'Bağlantı hazır — Veri Çek veya Gönder butonuna basın';
+    sbIstatistik();
+    return;
+  }
+
+  // Yoksa sunucudan çekmeyi dene (Railway env vars veya config dosyası)
+  if(uyari) {
+    uyari.style.display = 'block';
+    uyari.innerHTML = '⏳ Sunucu yapılandırması kontrol ediliyor…';
+  }
+  if(durEl) durEl.textContent = '';
+
+  fetch(API + '/api/config')
+    .then(function(r){ return r.json(); })
+    .then(function(cfg){
+      if(cfg.sbUrl) {
+        sbUrl = cfg.sbUrl;
+        if(urlEl) urlEl.value = sbUrl;
+        try{ localStorage.setItem('sb_config', JSON.stringify({url:sbUrl, key:sbKey})); }catch{}
+      }
+      if(cfg.sbKey) {
+        sbKey = cfg.sbKey;
+        if(keyEl) keyEl.value = sbKey;
+        try{ localStorage.setItem('sb_config', JSON.stringify({url:sbUrl, key:sbKey})); }catch{}
+      }
+
+      if(sbUrl && sbKey){
+        if(uyari) uyari.style.display = 'none';
+        if(durEl) durEl.textContent = 'Bağlantı hazır — Veri Çek veya Gönder butonuna basın';
+        // Railway env hint göster
+        var hint = document.getElementById('railway-env-hint');
+        var isRailway = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+        if(hint && isRailway) hint.style.display = 'block';
+        sbIstatistik();
+      } else {
+        if(uyari) {
+          uyari.style.display = 'block';
+          var isRailway = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+          uyari.innerHTML = isRailway
+            ? '☁️ Railway\'de Supabase ayarlanmamış. Variables\'a <strong>SB_URL</strong> ve <strong>SB_KEY</strong> ekleyin ya da aşağıya girerek Kaydet\'e basın.'
+            : '⚠️ Önce URL ve Anon Key girin, <strong>Ayarları Kaydet</strong>\'e basın.';
+        }
+        if(durEl) durEl.textContent = '';
+      }
+    })
+    .catch(function(){
+      if(uyari) {
+        uyari.style.display = 'block';
+        uyari.innerHTML = '⚠️ Önce URL ve Anon Key girin, <strong>Ayarları Kaydet</strong>\'e basın.';
+      }
+    });
 }
 
 document.addEventListener('click', function(e) {
@@ -2146,6 +2808,8 @@ document.addEventListener('click', function(e) {
     sbKey = keyEl.value.trim();
     if(!sbUrl || !sbKey) { if(errEl){errEl.textContent='URL ve Key zorunlu.';errEl.classList.add('show');} return; }
     localStorage.setItem('sb_config', JSON.stringify({url:sbUrl, key:sbKey}));
+    // Sunucuya da kaydet (Railway'de tüm cihazlar URL'yi görsün)
+    fetch(API + '/api/config', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({sbUrl:sbUrl, sbKey:sbKey})}).catch(()=>{});
     if(errEl) errEl.classList.remove('show');
     var uyari = document.getElementById('sb-url-uyari');
     if(uyari) uyari.style.display = 'none';
@@ -2162,16 +2826,10 @@ document.addEventListener('click', function(e) {
     if(!sbUrl||!sbKey){ alert('Önce URL ve Key girin.'); return; }
     var logEl = document.getElementById('sb-log');
     var durEl = document.getElementById('sb-durum');
-    if(logEl){ logEl.style.display='block'; logEl.textContent='⬇️ Supabase\'ten çekiliyor...\n'; }
-    e.target.disabled=true; e.target.textContent='⏳';
-    apiFetch('/api/sync/cek',{method:'POST',body:JSON.stringify({sbUrl:sbUrl,sbKey:sbKey})})
-      .then(function(r){return r.json();})
-      .then(function(d){
-        if(logEl) logEl.textContent += '✅ Tamamlandı!\n'+JSON.stringify(d,null,2);
-        if(durEl) durEl.textContent = 'Son çekme: '+new Date().toLocaleString('tr-TR');
-      })
-      .catch(function(err){ if(logEl) logEl.textContent += '❌ Hata: '+err.message; })
-      .finally(function(){ e.target.disabled=false; e.target.textContent='⬇️ Veri Çek'; });
+    var cekBtn = e.target;
+    if(logEl){ logEl.style.display='block'; logEl.textContent=''; }
+    cekBtn.disabled=true; cekBtn.textContent='⏳';
+    sbSenkronizeCek(logEl, durEl).finally(function(){ cekBtn.disabled=false; cekBtn.textContent='⬇️ Veri Çek'; });
   }
 
   // Veri Gönder
@@ -2180,28 +2838,254 @@ document.addEventListener('click', function(e) {
     if(!confirm('Yerel veriler Supabase\'e gonderilecek?')) return;
     var logEl = document.getElementById('sb-log');
     var durEl = document.getElementById('sb-durum');
-    if(logEl){ logEl.style.display='block'; logEl.textContent='⬆️ Supabase\'e gonderiliyor...\n'; }
-    e.target.disabled=true; e.target.textContent='⏳';
-    apiFetch('/api/sync/gonder',{method:'POST',body:JSON.stringify({sbUrl:sbUrl,sbKey:sbKey})})
-      .then(function(r){return r.json();})
-      .then(function(d){
-        if(logEl) logEl.textContent += '✅ Tamamlandi!\n'+JSON.stringify(d,null,2);
-        if(durEl) durEl.textContent = 'Son gonderme: '+new Date().toLocaleString('tr-TR');
-      })
-      .catch(function(err){ if(logEl) logEl.textContent += '❌ Hata: '+err.message; })
-      .finally(function(){ e.target.disabled=false; e.target.textContent='⬆️ Veri Gonder'; });
+    var gonderBtn = e.target;
+    if(logEl){ logEl.style.display='block'; logEl.textContent=''; }
+    gonderBtn.disabled=true; gonderBtn.textContent='⏳';
+    sbSenkronizeGonder(logEl, durEl).finally(function(){ gonderBtn.disabled=false; gonderBtn.textContent='⬆️ Veri Gönder'; });
   }
 });
 
-// Sayfa acilisinda Supabase alanlarini doldur
-(function(){
-  var urlEl=document.getElementById('sb-url');
-  var keyEl=document.getElementById('sb-key');
-  if(urlEl && sbUrl) urlEl.value=sbUrl;
-  if(keyEl && sbKey) keyEl.value=sbKey;
-  var uyari=document.getElementById('sb-url-uyari');
-  if(uyari) uyari.style.display=(sbUrl&&sbKey)?'none':'block';
-})();
+// ⬆️ VERİ GÖNDER (Yerel → Supabase) — client-side, doğru alan adlarıyla
+async function sbSenkronizeGonder(logEl, durEl){
+  function log(msg, tip){ sbLog(msg, tip); }
+
+  // camelCase → snake_case alan eşlemesi (analizler tablosu)
+  // Tam kolon seti — Supabase şeması destekliyorsa
+  function analizToSbFull(a){
+    const sonuc = a.sonuc || {};
+    return {
+      id             : a.id,
+      bahce_adi      : a.bahceAdi || a.bahce_adi || null,
+      mevsim         : a.mevsim || null,
+      yil            : a.yil || null,
+      tarih          : a.tarih || new Date().toISOString(),
+      bolge_adi      : sonuc.bolge_adi || a.bolge_adi || null,
+      toprak_tipi    : sonuc.toprak_tipi || a.toprak_tipi || null,
+      iklim_tipi     : sonuc.iklim_tipi || a.iklim_tipi || null,
+      genel_puan     : sonuc.genel_puan || a.genel_puan || null,
+      genel_yorum    : sonuc.genel_yorum || a.genel_yorum || null,
+      ph_mevcut      : sonuc.ph_mevcut || a.ph_mevcut || null,
+      ph_ideal       : sonuc.ph_ideal || a.ph_ideal || null,
+      ph_durumu      : sonuc.ph_durumu || a.ph_durumu || null,
+      organik_madde  : sonuc.organik_madde || a.organik_madde || null,
+      drenaj         : sonuc.drenaj || a.drenaj || null,
+      tuzluluk_riski : sonuc.tuzluluk_riski || a.tuzluluk_riski || null,
+      yillik_yagis   : sonuc.yillik_yagis || a.yillik_yagis || null,
+      sonuc_json     : JSON.stringify(sonuc),
+    };
+  }
+
+  // Minimal kolon seti — her şemada çalışır, detaylar sonuc_json'da
+  // Ultra minimal — sadece tablo şemasında kesinlikle olması gereken kolonlar
+  function analizToSbMin(a){
+    const sonuc = a.sonuc || {};
+    return {
+      id        : a.id,
+      sonuc_json: JSON.stringify(sonuc),
+    };
+  }
+
+  // Orta minimal — tarih + bahce_adi + sonuc_json
+  function analizToSbMid(a){
+    const sonuc = a.sonuc || {};
+    return {
+      id        : a.id,
+      bahce_adi : a.bahceAdi || a.bahce_adi || null,
+      mevsim    : a.mevsim || null,
+      yil       : a.yil || null,
+      tarih     : a.tarih || new Date().toISOString(),
+      sonuc_json: JSON.stringify(sonuc),
+    };
+  }
+
+  // agaclar alan eşlemesi (zaten snake_case, ama kontrol)
+  function agacToSb(a){
+    return {
+      id     : a.id,
+      adi    : a.adi || a.name || null,
+      meyve  : a.meyve || null,
+      yil    : a.yil || null,
+      durum  : a.durum || 'saglikli',
+      notlar : a.notlar || null,
+      lat    : a.lat || null,
+      lon    : a.lon || null,
+    };
+  }
+
+  // tedaviler alan eşlemesi
+  function tedaviToSb(t){
+    return {
+      id               : t.id,
+      ilac             : t.ilac || null,
+      doz              : t.doz || null,
+      uygulama_tarihi  : t.uygulama_tarihi || t.tarih || new Date().toISOString(),
+      notlar           : t.notlar || null,
+      tespit_id        : t.tespit_id || null,
+    };
+  }
+
+  // verim alan eşlemesi
+  function verimToSb(v){
+    return {
+      id          : v.id,
+      meyve       : v.meyve || null,
+      yil         : v.yil || null,
+      gerceklesen : v.gerceklesen || 0,
+      hedef       : v.hedef || null,
+      agac_sayisi : v.agac_sayisi || null,
+      fiyat       : v.fiyat || null,
+      notlar      : v.notlar || null,
+    };
+  }
+
+  const adimlar = [
+    {
+      ad: 'analizler',
+      fetchUrl: '/api/arsiv',
+      mapFn: analizToSbFull,
+      mapFnMin: analizToSbMin,
+      parse: (d) => d.analizler || [],
+    },
+    {
+      ad: 'agaclar',
+      fetchUrl: '/api/agaclar',
+      mapFn: agacToSb,
+      parse: (d) => Array.isArray(d) ? d : [],
+    },
+    {
+      ad: 'tedaviler',
+      fetchUrl: '/api/tedavi',
+      mapFn: tedaviToSb,
+      parse: (d) => Array.isArray(d) ? d : [],
+    },
+    {
+      ad: 'verim',
+      fetchUrl: '/api/verim',
+      mapFn: verimToSb,
+      parse: (d) => Array.isArray(d) ? d : [],
+    },
+  ];
+
+  // Batch upsert: PGRST204 hatası gelince hata mesajından kolon adını parse eder,
+  // o kolonu çıkarır ve tekrar dener — şema ne olursa olsun çalışır.
+  async function sbUpsertSmart(tablo, kayitlar, minKayitlar, log){
+    const BATCH = 50;
+
+    async function gonderBatch(parca){
+      const res = await fetch(sbUrl + '/rest/v1/' + tablo, {
+        method: 'POST',
+        headers: {
+          'apikey': sbKey, 'Authorization': 'Bearer ' + sbKey,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates,return=minimal'
+        },
+        body: JSON.stringify(parca)
+      });
+      if(!res.ok){
+        const err = await res.text();
+        throw Object.assign(new Error('Supabase ' + tablo + ': ' + res.status + ' ' + err), {sbRaw: err});
+      }
+    }
+
+    // Gönderilecek kayıt kümesini başlat
+    let aktifKayitlar = kayitlar;
+    let mod = 'tam';
+    const cikarilanKolonlar = [];
+
+    // PGRST204 döngüsü — her turda bir kolon çıkararak dener (max 15 tur)
+    for(let tur = 0; tur < 15; tur++){
+      try {
+        // İlk batch ile test et
+        await gonderBatch(aktifKayitlar.slice(0, Math.min(BATCH, aktifKayitlar.length)));
+        // Başarılı → kalanları gönder
+        for(let i = BATCH; i < aktifKayitlar.length; i += BATCH){
+          await gonderBatch(aktifKayitlar.slice(i, i + BATCH));
+        }
+        if(cikarilanKolonlar.length > 0){
+          log(`   ✅ ${tablo}: ${aktifKayitlar.length} kayıt gönderildi (çıkarılan kolonlar: ${cikarilanKolonlar.join(', ')})`, 'ok');
+        }
+        return { sayi: aktifKayitlar.length, mod };
+      } catch(e) {
+        if(!e.sbRaw || !e.sbRaw.includes('PGRST204')) throw e; // Farklı hata — yeniden fırlat
+
+        // PGRST204: hata mesajından kolon adını çıkar
+        // Örn: "Could not find the 'genel_puan' column of 'analizler'"
+        const kolonMatch = e.sbRaw.match(/'([^']+)'\s+column of/);
+        if(!kolonMatch) {
+          // Kolon adı parse edilemedi — ultra minimal'e geç
+          if(minKayitlar){
+            log(`   ⚠️ Şema uyumsuzluğu — en minimal moda geçiliyor (id + sonuc_json)…`, 'info');
+            try {
+              for(let i=0; i<minKayitlar.length; i+=BATCH) await gonderBatch(minKayitlar.slice(i,i+BATCH));
+              return { sayi: minKayitlar.length, mod: 'ultra-minimal' };
+            } catch(e2) { throw e2; }
+          }
+          throw e;
+        }
+
+        const eksikKolon = kolonMatch[1];
+        cikarilanKolonlar.push(eksikKolon);
+        mod = 'uyarlanmış';
+        log(`   ⚠️ '${eksikKolon}' kolonu yok — çıkarılıyor ve tekrar deneniyor…`, 'info');
+
+        // O kolonu tüm kayıtlardan sil
+        aktifKayitlar = aktifKayitlar.map(k => {
+          const yeni = {...k};
+          delete yeni[eksikKolon];
+          return yeni;
+        });
+      }
+    }
+    throw new Error('Maksimum kolon çıkarma turuna ulaşıldı');
+  }
+
+  let toplamGonderilen = 0;
+  let hatalar = [];
+
+  for(const adim of adimlar){
+    log(`⬆️ ${adim.ad} gönderiliyor…`, 'info');
+    try{
+      const res = await apiFetch(adim.fetchUrl);
+      const raw = await res.json();
+      const kayitlar = adim.parse(raw);
+      if(!kayitlar.length){ log(`   ${adim.ad}: yerel kayıt yok, atlandı.`, 'info'); continue; }
+      const mapped = kayitlar.map(adim.mapFn);
+      const minMapped = adim.mapFnMin ? kayitlar.map(adim.mapFnMin) : null;
+      const sonuc = await sbUpsertSmart(adim.ad, mapped, minMapped, log);
+      toplamGonderilen += sonuc.sayi;
+      log(`   ✅ ${adim.ad}: ${sonuc.sayi} kayıt gönderildi${sonuc.mod === 'minimal' ? ' (minimal mod — sonuc_json kullanıldı)' : ''}.`, 'ok');
+    } catch(e){
+      const hata = `${adim.ad}: ${e.message}`;
+      hatalar.push(hata);
+      log(`   ❌ ${hata}`, 'err');
+    }
+  }
+
+  if(durEl) durEl.textContent = `Son gönderme: ${new Date().toLocaleString('tr-TR')} · ${toplamGonderilen} kayıt`;
+  if(hatalar.length === 0){
+    log(`✅ Tamamlandı! Toplam ${toplamGonderilen} kayıt Supabase\'e gönderildi.`, 'ok');
+  } else {
+    log(`⚠️ Kısmen tamamlandı: ${toplamGonderilen} kayıt gönderildi, ${hatalar.length} tablo hatalı.`, 'err');
+  }
+  sbIstatistik();
+}
+
+// ⬇️ VERİ ÇEK (Supabase → sunucu) — backend endpoint üzerinden
+async function sbSenkronizeCek(logEl, durEl){
+  sbLog('⬇️ Supabase\'ten veri çekiliyor…', 'info');
+  try{
+    const res = await apiFetch('/api/sync/cek', {method:'POST', body: JSON.stringify({sbUrl, sbKey})});
+    const d = await res.json();
+    if(d.error) throw new Error(d.error);
+    sbLog('✅ Çekme tamamlandı: ' + JSON.stringify(d), 'ok');
+    if(durEl) durEl.textContent = 'Son çekme: ' + new Date().toLocaleString('tr-TR');
+    sbIstatistik();
+  } catch(e){
+    sbLog('❌ Çekme hatası: ' + e.message, 'err');
+  }
+}
+
+// Sayfa açılışında Supabase config'ini belleğe al (form dolumu tab açılınca yapılır)
 </script>
 </body>
 </html>
