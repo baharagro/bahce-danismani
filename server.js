@@ -180,6 +180,7 @@ app.post('/api/teshis', async (req,res) => {
 
 // ── TEŞHİS GEÇMİŞİ ──────────────────────────────────────────────────────────
 app.get('/api/teshisler', (req,res)=>{ const db=readDB(); res.json(db.teshisler||[]); });
+app.get('/api/teshisler/:id', (req,res)=>{ const db=readDB(); const k=(db.teshisler||[]).find(t=>String(t.id)===req.params.id); if(!k) return res.status(404).json({error:'Bulunamadı.'}); res.json(k); });
 app.delete('/api/teshisler/:id', (req,res)=>{ const db=readDB(); db.teshisler=(db.teshisler||[]).filter(t=>String(t.id)!==req.params.id); writeDB(db); res.json({silindi:true}); });
 
 // ── FOTO KARŞILAŞTIRMA ───────────────────────────────────────────────────────
@@ -487,7 +488,18 @@ app.get('/api/arsiv/:id', (req,res)=>{ const db=readDB(); const k=(db.analizler|
 app.delete('/api/arsiv/:id', (req,res)=>{ const db=readDB(); db.analizler=(db.analizler||[]).filter(a=>String(a.id)!==req.params.id); writeDB(db); res.json({silindi:true}); });
 
 // ── RAPOR ─────────────────────────────────────────────────────────────────────
-app.get('/api/rapor/:yil', (req,res)=>{ const yil=parseInt(req.params.yil),db=readDB(); res.json({yil,analizler:(db.analizler||[]).filter(a=>a.yil===yil),verimler:(db.verim||[]).filter(v=>new Date(v.tarih).getFullYear()===yil),tedaviler:(db.tedaviler||[]).filter(t=>new Date(t.tarih).getFullYear()===yil),agaclar:db.agaclar||[]}); });
+app.get('/api/rapor/:yil', (req,res)=>{
+  const yil=parseInt(req.params.yil), db=readDB();
+  const teshislerYil=(db.teshisler||[]).filter(t=>new Date(t.tarih).getFullYear()===yil);
+  res.json({
+    yil,
+    analizler:(db.analizler||[]).filter(a=>a.yil===yil),
+    verimler:(db.verim||[]).filter(v=>new Date(v.tarih).getFullYear()===yil),
+    tedaviler:(db.tedaviler||[]).filter(t=>new Date(t.tarih).getFullYear()===yil),
+    agaclar:db.agaclar||[],
+    teshisler:teshislerYil,
+  });
+});
 
 // ── SUPABASE MANUEL SYNC ─────────────────────────────────────────────────────
 async function sbRequest(sbUrl,sbKey,tablo,method='GET',data=null,upsert=false) {
