@@ -144,7 +144,7 @@ app.get('/api/geocode', (req,res) => {
 // ── HASTALIK TEŞHİSİ ─────────────────────────────────────────────────────────
 app.post('/api/teshis', async (req,res) => {
   try {
-    const { fotograflar, mimeType='image/jpeg', fotografTuru='genel', meyve='diger', sesYazisi='' } = req.body;
+    const { fotograflar, mimeType='image/jpeg', fotografTuru='genel', meyve='diger', sesYazisi='', thumbnail=null } = req.body;
     const gorselListesi = fotograflar||(req.body.imageBase64?[req.body.imageBase64]:[]);
     if (!gorselListesi.length) return res.status(400).json({ error:'Görsel gerekli.' });
     const meyveBilgi = {seftali:'Standart seftali',seftali_zodiac:'Yassi seftali Zodiac',seftali_osiris:'Yassi seftali Osiris',nektarin_gartario:'Nektarin Gartario',nektarin_boreal:'Nektarin Boreal',yassi_nektarin_luisella:'Yassi nektarin Luisella',kayisi_orange_ruby:'Kayisi Orange Ruby',mandalina_wmurcot:'Mandalina W-Murcot',nar_hicaz:'Hicaz Nar',nar_early_wonderful:'Erkenci Nar',hurma_rojo_brillante:'Hurma Rojo Brillante',erik:'Erik',erik_can:'Can erigi',erik_japon:'Japon erigi',kiraz:'Kiraz',kiraz_0900:'Kiraz 0900 Ziraat',kiraz_lambert:'Kiraz Lambert',elma:'Elma',elma_fuji:'Elma Fuji',elma_golden:'Elma Golden',elma_granny:'Elma Granny Smith',elma_starking:'Elma Starking',armut:'Armut',armut_deveci:'Armut Deveci',armut_santa:'Armut Santa Maria',ayva:'Ayva',ayva_ekmek:'Ekmek Ayvasi',uzum:'Uzum',uzum_sultani:'Uzum Sultani',uzum_hamburg:'Uzum Hamburg',uzum_razaki:'Uzum Razaki',incir:'Incir',incir_sarilop:'Incir Sarilop',incir_bursa:'Incir Bursa Siyahi',zeytin:'Zeytin',zeytin_ayvalik:'Zeytin Ayvalik',zeytin_memecik:'Zeytin Memecik',zeytin_gemlik:'Zeytin Gemlik',diger:'Diger'};
@@ -168,6 +168,7 @@ app.post('/api/teshis', async (req,res) => {
       meyveAdi : meyveBilgi[meyve] || meyve,
       fotografTuru,
       sesYazisi: sesYazisi || '',
+      thumbnail: thumbnail || null,
       sonuc    : parsed,
     };
     db.teshisler.unshift(teshisKayit);
