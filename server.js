@@ -18,8 +18,8 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-if (!GEMINI_API_KEY) { console.error('❌ GEMINI_API_KEY env variable tanımlı değil!'); process.exit(1); }const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyBM6iO_jolJB_SAtYJAI31IoDHuQtdFRBk';
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 // Railway'de dosya sistemi ephemeral — DB dosyaları her deploy'da sıfırlanır.
 // Kalıcı veri için Railway Volume ekleyin veya Supabase sync kullanın.
@@ -157,9 +157,30 @@ app.post('/api/teshis', async (req,res) => {
     const result = await model.generateContent(content);
     const parsed = extractJSON(result.response.text());
     if (!parsed) return res.status(500).json({ error:'Yanıt işlenemedi.' });
-    res.json(parsed);
+
+    // Teşhis sonucunu DB'ye kaydet
+    const db = readDB();
+    if (!db.teshisler) db.teshisler = [];
+    const teshisKayit = {
+      id       : Date.now(),
+      tarih    : new Date().toISOString(),
+      meyve    : meyve || 'diger',
+      meyveAdi : meyveBilgi[meyve] || meyve,
+      fotografTuru,
+      sesYazisi: sesYazisi || '',
+      sonuc    : parsed,
+    };
+    db.teshisler.unshift(teshisKayit);
+    if (db.teshisler.length > 200) db.teshisler = db.teshisler.slice(0, 200); // max 200 kayıt
+    writeDB(db);
+
+    res.json({ ...parsed, _id: teshisKayit.id });
   } catch(err) { res.status(500).json({ error:err.message }); }
 });
+
+// ── TEŞHİS GEÇMİŞİ ──────────────────────────────────────────────────────────
+app.get('/api/teshisler', (req,res)=>{ const db=readDB(); res.json(db.teshisler||[]); });
+app.delete('/api/teshisler/:id', (req,res)=>{ const db=readDB(); db.teshisler=(db.teshisler||[]).filter(t=>String(t.id)!==req.params.id); writeDB(db); res.json({silindi:true}); });
 
 // ── FOTO KARŞILAŞTIRMA ───────────────────────────────────────────────────────
 app.post('/api/karsilastir', async (req,res) => {
@@ -434,7 +455,34 @@ app.post('/api/verim', (req,res)=>{ const db=readDB(); const k={id:Date.now(),ta
 app.delete('/api/verim/:id', (req,res)=>{ const db=readDB(); db.verim=(db.verim||[]).filter(v=>String(v.id)!==req.params.id); writeDB(db); res.json({silindi:true}); });
 
 // ── ARŞİV ─────────────────────────────────────────────────────────────────────
-app.get('/api/arsiv', (req,res)=>{ const db=readDB(); const ozet=(db.analizler||[]).map(({id,tarih,yil,mevsim,bahceAdi,lat,lon,bolgeAdi,kaynak,sonuc})=>({id,tarih,yil,mevsim,bahceAdi,lat,lon,bolgeAdi,kaynak,genel_puan:sonuc?.genel_puan,bolge_adi:sonuc?.bolge_adi||bolgeAdi,ph_mevcut:sonuc?.ph_mevcut,organik_madde:sonuc?.organik_madde,genel_yorum:sonuc?.genel_yorum})); res.json({analizler:ozet,toplam:ozet.length}); });
+app.get('/api/arsiv', (req,res)=>{
+  const db=readDB();
+  const ozet=(db.analizler||[]).map(a=>{
+    const sonuc = a.sonuc || {};
+    const bahceAdi = a.bahceAdi || a.bahce_adi || null;
+    const bolgeAdi = a.bolgeAdi || a.bolge_adi || sonuc.bolge_adi || null;
+    return {
+      id           : a.id,
+      tarih        : a.tarih,
+      yil          : a.yil,
+      mevsim       : a.mevsim,
+      bahceAdi,
+      bahce_adi    : bahceAdi,
+      lat          : a.lat,
+      lon          : a.lon,
+      bolgeAdi,
+      bolge_adi    : bolgeAdi,
+      kaynak       : a.kaynak,
+      genel_puan   : sonuc.genel_puan || a.genel_puan || 0,
+      ph_mevcut    : sonuc.ph_mevcut || a.ph_mevcut || null,
+      organik_madde: sonuc.organik_madde || a.organik_madde || null,
+      drenaj       : sonuc.drenaj || a.drenaj || null,
+      tuzluluk_riski: sonuc.tuzluluk_riski || a.tuzluluk_riski || null,
+      genel_yorum  : sonuc.genel_yorum || a.genel_yorum || null,
+    };
+  });
+  res.json({analizler:ozet,toplam:ozet.length});
+});
 app.get('/api/arsiv/:id', (req,res)=>{ const db=readDB(); const k=(db.analizler||[]).find(a=>String(a.id)===req.params.id); if(!k) return res.status(404).json({error:'Bulunamadı.'}); res.json(k); });
 app.delete('/api/arsiv/:id', (req,res)=>{ const db=readDB(); db.analizler=(db.analizler||[]).filter(a=>String(a.id)!==req.params.id); writeDB(db); res.json({silindi:true}); });
 
@@ -458,11 +506,55 @@ app.post('/api/sync/gonder', async (req,res)=>{
     const {sbUrl,sbKey}=req.body;
     if(!sbUrl||!sbKey) return res.status(400).json({error:'sbUrl ve sbKey gerekli.'});
     const db=readDB(); const sonuclar={};
-    const tablolar=[{key:'analizler',sb:'analizler'},{key:'agaclar',sb:'agaclar'},{key:'verim',sb:'verim'},{key:'tedaviler',sb:'tedaviler'}];
-    for(const {key,sb} of tablolar){
-      const kayitlar=(db[key]||[]).map(k=>{const c={...k};if(c.sonuc&&typeof c.sonuc==='object')c.sonuc=JSON.stringify(c.sonuc);if(c.yapan&&typeof c.yapan==='object')c.yapan=JSON.stringify(c.yapan);return c;});
-      if(kayitlar.length>0){const batches=[];for(let i=0;i<kayitlar.length;i+=500)batches.push(kayitlar.slice(i,i+500));for(const batch of batches)await sbRequest(sbUrl,sbKey,sb,'POST',batch,true);}
-      sonuclar[key]=kayitlar.length;
+
+    // analizler: camelCase → snake_case
+    const analizler = (db.analizler||[]).map(k=>{
+      const sonuc = k.sonuc||{};
+      const bahceAdi = k.bahceAdi || k.bahce_adi || null;
+      return {
+        id:k.id, bahce_adi:bahceAdi, mevsim:k.mevsim, yil:k.yil,
+        tarih:k.tarih||new Date().toISOString(),
+        genel_puan:sonuc.genel_puan||null, bolge_adi:sonuc.bolge_adi||null,
+        toprak_tipi:sonuc.toprak_tipi||null, iklim_tipi:sonuc.iklim_tipi||null,
+        ph_mevcut:sonuc.ph_mevcut||null, ph_durumu:sonuc.ph_durumu||null,
+        organik_madde:sonuc.organik_madde||null, drenaj:sonuc.drenaj||null,
+        tuzluluk_riski:sonuc.tuzluluk_riski||null, genel_yorum:sonuc.genel_yorum||null,
+        sonuc_json:typeof sonuc==='object'?JSON.stringify(sonuc):sonuc,
+      };
+    });
+
+    // teshisler
+    const teshisler = (db.teshisler||[]).map(t=>({
+      id:t.id, tarih:t.tarih,
+      meyve:t.meyve||null, meyve_adi:t.meyveAdi||null,
+      fotograf_turu:t.fotografTuru||null, ses_yazisi:t.sesYazisi||null,
+      durum:t.sonuc?.durum||null, tespit:t.sonuc?.tespit||null,
+      siddet:t.sonuc?.siddet||null, siddet_yuzdesi:t.sonuc?.siddet_yuzdesi||null,
+      acil_mi:t.sonuc?.acil_mi||false,
+      sonuc_json:JSON.stringify(t.sonuc||{}),
+    }));
+
+    const tedaviler = (db.tedaviler||[]).map(t=>({
+      id:t.id, ilac:t.ilac||null, doz:t.doz||null,
+      uygulama_tarihi:t.uygulama_tarihi||t.tarih||new Date().toISOString(),
+      notlar:t.notlar||null, tespit_id:t.tespit_id||null,
+    }));
+
+    const tablolar = [
+      {sb:'analizler',  kayitlar:analizler},
+      {sb:'agaclar',    kayitlar:db.agaclar||[]},
+      {sb:'verim',      kayitlar:db.verim||[]},
+      {sb:'tedaviler',  kayitlar:tedaviler},
+      {sb:'teshisler',  kayitlar:teshisler},
+    ];
+
+    for(const {sb, kayitlar} of tablolar){
+      if(kayitlar.length>0){
+        const batches=[];
+        for(let i=0;i<kayitlar.length;i+=500) batches.push(kayitlar.slice(i,i+500));
+        for(const batch of batches) await sbRequest(sbUrl,sbKey,sb,'POST',batch,true);
+      }
+      sonuclar[sb]=kayitlar.length;
     }
     res.json(sonuclar);
   } catch(err){console.error('Sync gönder:',err.message);res.status(500).json({error:err.message});}
@@ -473,15 +565,62 @@ app.post('/api/sync/cek', async (req,res)=>{
     const {sbUrl,sbKey}=req.body;
     if(!sbUrl||!sbKey) return res.status(400).json({error:'sbUrl ve sbKey gerekli.'});
     const db=readDB(); const sonuclar={};
-    const tablolar=[{key:'analizler',sb:'analizler'},{key:'agaclar',sb:'agaclar'},{key:'verim',sb:'verim'},{key:'tedaviler',sb:'tedaviler'}];
+    const tablolar=[{key:'analizler',sb:'analizler'},{key:'agaclar',sb:'agaclar'},{key:'verim',sb:'verim'},{key:'tedaviler',sb:'tedaviler'},{key:'teshisler',sb:'teshisler'}];
     for(const {key,sb} of tablolar){
       const sbKayitlar=await sbRequest(sbUrl,sbKey,sb);
       if(!Array.isArray(sbKayitlar)){sonuclar[key]=0;continue;}
       const mevcutIdler=new Set((db[key]||[]).map(k=>String(k.id)));
       for(const sk of sbKayitlar){
-        const yerel={...sk};if(yerel.sonuc&&typeof yerel.sonuc==='string'){try{yerel.sonuc=JSON.parse(yerel.sonuc);}catch{}}
-        if(!mevcutIdler.has(String(yerel.id))){if(!db[key])db[key]=[];db[key].push(yerel);}
-        else{const idx=(db[key]||[]).findIndex(k=>String(k.id)===String(yerel.id));if(idx>=0&&new Date(yerel.tarih||0)>new Date(db[key][idx].tarih||0))db[key][idx]=yerel;}
+        const yerel={...sk};
+
+        // snake_case → camelCase (analizler)
+        if(yerel.bahce_adi && !yerel.bahceAdi) yerel.bahceAdi = yerel.bahce_adi;
+        if(yerel.bolge_adi && !yerel.bolgeAdi) yerel.bolgeAdi = yerel.bolge_adi;
+
+        // teshisler snake_case → camelCase
+        if(yerel.meyve_adi && !yerel.meyveAdi) yerel.meyveAdi = yerel.meyve_adi;
+        if(yerel.fotograf_turu && !yerel.fotografTuru) yerel.fotografTuru = yerel.fotograf_turu;
+        if(yerel.ses_yazisi !== undefined && !yerel.sesYazisi) yerel.sesYazisi = yerel.ses_yazisi;
+
+        // sonuc_json → sonuc objesi
+        if(yerel.sonuc_json) {
+          try {
+            const parsed = typeof yerel.sonuc_json === 'string'
+              ? JSON.parse(yerel.sonuc_json)
+              : yerel.sonuc_json;
+            if(parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+              yerel.sonuc = parsed;
+            }
+          } catch {}
+        }
+        if(yerel.sonuc && typeof yerel.sonuc === 'string') {
+          try { yerel.sonuc = JSON.parse(yerel.sonuc); } catch {}
+        }
+        // analizler için sonuc yoksa kolonlardan oluştur
+        if(key==='analizler' && (!yerel.sonuc || Object.keys(yerel.sonuc||{}).length === 0)) {
+          yerel.sonuc = {
+            genel_puan:yerel.genel_puan||0, bolge_adi:yerel.bolge_adi||'',
+            toprak_tipi:yerel.toprak_tipi||'', ph_mevcut:yerel.ph_mevcut||'',
+            ph_durumu:yerel.ph_durumu||'', organik_madde:yerel.organik_madde||'',
+            drenaj:yerel.drenaj||'', tuzluluk_riski:yerel.tuzluluk_riski||'',
+            genel_yorum:yerel.genel_yorum||'',
+          };
+        }
+        // teshisler için sonuc yoksa kolonlardan oluştur
+        if(key==='teshisler' && (!yerel.sonuc || Object.keys(yerel.sonuc||{}).length === 0)) {
+          yerel.sonuc = {
+            durum:yerel.durum||'', tespit:yerel.tespit||'',
+            siddet:yerel.siddet||'', siddet_yuzdesi:yerel.siddet_yuzdesi||0,
+            acil_mi:yerel.acil_mi||false,
+          };
+        }
+
+        if(!mevcutIdler.has(String(yerel.id))){
+          if(!db[key])db[key]=[];db[key].push(yerel);
+        } else {
+          const idx=(db[key]||[]).findIndex(k=>String(k.id)===String(yerel.id));
+          if(idx>=0&&new Date(yerel.tarih||0)>new Date(db[key][idx].tarih||0))db[key][idx]=yerel;
+        }
       }
       if(db[key])db[key].sort((a,b)=>new Date(b.tarih||0)-new Date(a.tarih||0));
       sonuclar[key]=sbKayitlar.length;
