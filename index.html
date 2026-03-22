@@ -970,6 +970,7 @@ footer{text-align:center;font-size:.72rem;color:rgba(26,18,9,.2);padding:5px 13p
     <div id="rapor-verim"></div>
     <div class="slabel" style="margin:14px 0 10px">💊 Uygulanan Tedaviler</div>
     <div id="rapor-tedavi"></div>
+    <div id="rapor-teshisler"></div>
   </div><!-- /rapor-result -->
 
   <div class="card" style="margin-top:13px">
@@ -1312,27 +1313,70 @@ async function loadTeshisGecmis(){
     const teshisler = await res.json();
     if(!teshisler.length){ el.innerHTML='<div class="hempty">Henüz teşhis geçmişi yok</div>'; return; }
     const durumIco = {saglikli:'✅', uyari:'⚠️', tehlike:'🚨'};
-    el.innerHTML = teshisler.slice(0,20).map(t=>{
+    const durumRenk = {saglikli:'var(--grn)',uyari:'var(--g1)',tehlike:'var(--r2)'};
+    el.innerHTML = teshisler.slice(0,50).map(t=>{
       const s = t.sonuc||{};
-      const ico = durumIco[(s.durum||'').toLowerCase()] || '🔬';
+      const du = (s.durum||'').toLowerCase();
+      const ico = durumIco[du] || '🔬';
+      const renk = durumRenk[du] || 'var(--b1)';
       const tarih = new Date(t.tarih).toLocaleDateString('tr-TR');
       const saat = new Date(t.tarih).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
-      return `<div style="background:#fff;border:1px solid var(--brd);border-radius:9px;padding:12px;margin-bottom:8px;box-shadow:var(--shd);display:flex;gap:10px;align-items:flex-start">
-        <span style="font-size:1.3rem;flex-shrink:0">${ico}</span>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:600;font-size:.88rem;margin-bottom:2px">${s.tespit||'—'}</div>
-          <div style="font-size:.75rem;color:rgba(26,18,9,.5);margin-bottom:4px">${t.meyveAdi||t.meyve||'—'} · ${s.siddet||''} · ${tarih} ${saat}</div>
-          ${s.kimyasal_onlem?`<div style="font-size:.76rem;color:rgba(26,18,9,.55);border-top:1px solid var(--brd);padding-top:5px;margin-top:5px">💊 ${s.kimyasal_onlem.slice(0,120)}${s.kimyasal_onlem.length>120?'…':''}</div>`:''}
+      const pct = s.siddet_yuzdesi||0;
+      return `<div style="background:#fff;border:1px solid var(--brd);border-radius:10px;padding:12px;margin-bottom:8px;box-shadow:var(--shd)">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="font-size:1.3rem;flex-shrink:0">${ico}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:.9rem;margin-bottom:2px;color:${renk}">${s.tespit||'—'}</div>
+            <div style="font-size:.74rem;color:rgba(26,18,9,.5)">${t.meyveAdi||t.meyve_adi||t.meyve||'—'} &middot; ${s.siddet||''} &middot; ${tarih} ${saat}</div>
+            ${pct>0?`<div style="height:4px;background:var(--brd);border-radius:99px;margin-top:6px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${renk};border-radius:99px"></div></div>`:''}
+          </div>
+          <div style="display:flex;gap:5px;flex-shrink:0">
+            <button onclick="showTeshisDetay('${t.id}')" style="background:var(--bbg);border:1px solid rgba(26,92,139,.2);border-radius:7px;padding:5px 9px;cursor:pointer;font-size:.75rem;color:var(--b1);font-weight:600">📋 Detay</button>
+            <button onclick="silTeshis('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:1rem;color:rgba(26,18,9,.25)" title="Sil">🗑</button>
+          </div>
         </div>
-        <button onclick="silTeshis('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:1rem;color:rgba(26,18,9,.3);flex-shrink:0" title="Sil">🗑</button>
       </div>`;
     }).join('');
   }catch(e){ if(el) el.innerHTML='<div class="hempty">Geçmiş yüklenemedi</div>'; }
 }
-async function silTeshis(id){
-  if(!confirm('Bu teşhisi silmek istediğinizden emin misiniz?')) return;
-  await apiFetch('/api/teshisler/'+id,{method:'DELETE'});
-  loadTeshisGecmis();
+
+// Teşhis detay modalı
+async function showTeshisDetay(id){
+  try{
+    const res = await apiFetch('/api/teshisler/'+id);
+    const t = await res.json();
+    const s = t.sonuc || {};
+    const durumIco = {saglikli:'✅',uyari:'⚠️',tehlike:'🚨'};
+    const du = (s.durum||'').toLowerCase();
+    const ico = durumIco[du]||'🔬';
+    const tarih = new Date(t.tarih).toLocaleDateString('tr-TR');
+    const saat = new Date(t.tarih).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+    const pct = s.siddet_yuzdesi||0;
+    document.getElementById('modal-title').textContent = `${ico} ${s.tespit||'Teşhis Detayı'}`;
+    document.getElementById('modal-body').innerHTML = `
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <span style="background:var(--rlt);color:var(--r1);padding:3px 10px;border-radius:99px;font-size:.75rem;font-weight:700">${t.meyveAdi||t.meyve_adi||t.meyve||'—'}</span>
+        <span style="background:var(--warm);color:rgba(26,18,9,.55);padding:3px 10px;border-radius:99px;font-size:.75rem">${t.fotografTuru||t.fotograf_turu||'—'}</span>
+        <span style="background:var(--warm);color:rgba(26,18,9,.55);padding:3px 10px;border-radius:99px;font-size:.75rem">${tarih} ${saat}</span>
+        ${s.acil_mi?`<span style="background:#ff4757;color:#fff;padding:3px 10px;border-radius:99px;font-size:.75rem;font-weight:700">🚨 ACİL</span>`:''}
+      </div>
+      ${s.guven_skoru?`<div style="font-size:.78rem;color:rgba(26,18,9,.45);margin-bottom:10px">Güven: ${s.guven_skoru}</div>`:''}
+      ${pct>0?`<div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:4px"><span>Şiddet: ${s.siddet||''}</span><span>${pct}%</span></div>
+        <div style="height:6px;background:var(--brd);border-radius:99px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${pct<=33?'var(--grn)':pct<=66?'var(--g1)':'var(--r2)'};border-radius:99px"></div></div>
+      </div>`:''}
+      ${s.aciklama?`<div style="background:var(--warm);border-radius:8px;padding:11px;margin-bottom:12px;font-size:.86rem;line-height:1.65">${s.aciklama}</div>`:''}
+      ${s.etkilened_bolge?`<div style="font-size:.82rem;margin-bottom:10px">📍 Etkilenen Bölge: <strong>${s.etkilened_bolge}</strong></div>`:''}
+      ${s.tedavi_suresi?`<div style="font-size:.82rem;margin-bottom:12px">⏱ Tedavi Süresi: <strong>${s.tedavi_suresi}</strong></div>`:''}
+      <div style="border-top:1px solid var(--brd);padding-top:12px;margin-top:4px">
+        ${s.kulturel_onlem?`<div style="margin-bottom:10px"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--grn);margin-bottom:5px">🌿 Kültürel Önlem</div><div style="font-size:.84rem;line-height:1.65;color:rgba(26,18,9,.68)">${s.kulturel_onlem}</div></div>`:''}
+        ${s.biyolojik_onlem?`<div style="margin-bottom:10px"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--b1);margin-bottom:5px">🔬 Biyolojik Önlem</div><div style="font-size:.84rem;line-height:1.65;color:rgba(26,18,9,.68)">${s.biyolojik_onlem}</div></div>`:''}
+        ${s.kimyasal_onlem?`<div style="margin-bottom:10px"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--r1);margin-bottom:5px">⚗️ Kimyasal Önlem</div><div style="font-size:.84rem;line-height:1.65;color:rgba(26,18,9,.68)">${s.kimyasal_onlem}</div></div>`:''}
+        ${s.referans?`<div style="font-size:.78rem;color:rgba(26,18,9,.4);border-top:1px solid var(--brd);padding-top:8px;margin-top:8px">📚 ${s.referans}</div>`:''}
+        ${t.sesYazisi||t.ses_yazisi?`<div style="font-size:.8rem;background:var(--bbg);border-radius:7px;padding:8px 11px;margin-top:8px">🎤 Not: ${t.sesYazisi||t.ses_yazisi}</div>`:''}
+      </div>`;
+    document.getElementById('modal-overlay').classList.add('show');
+  }catch(e){ alert('Detay yüklenemedi: '+e.message); }
 }
 
 // ══ TEDAVİ KAYDET ══
@@ -2441,9 +2485,38 @@ document.getElementById('rapor-btn').addEventListener('click',async()=>{
       {num:d.verimler.length,lbl:'Verim Kaydı'},{num:d.agaclar.length,lbl:'Kayıtlı Ağaç'},
       {num:toplam_verim+' kg/da',lbl:'Toplam Verim'},{num:toplam_gelir?toplam_gelir.toLocaleString('tr-TR')+' ₺':'—',lbl:'Tahmini Gelir'},
     ].map(s=>`<div class="rapor-stat"><div class="rs-sayi">${s.num}</div><div class="rs-lbl">${s.lbl}</div></div>`).join('');
-    document.getElementById('rapor-analizler').innerHTML=d.analizler.length?d.analizler.map(a=>`<div style="background:var(--warm);border:1px solid var(--brd);border-radius:8px;padding:11px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div><div style="font-weight:500;font-size:.88rem">${a.bahceAdi||'Bahçe'} — ${a.mevsim}</div><div style="font-size:.74rem;color:rgba(26,18,9,.38)">${a.bolge_adi||''}</div></div><div style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:700;color:${(a.genel_puan||0)>=70?'var(--grn2)':(a.genel_puan||0)>=45?'var(--g1)':'var(--r2)'}">${a.genel_puan||'—'}<span style="font-size:.7rem;opacity:.4">/100</span></div></div>`).join(''):'<div class="hempty">Bu yıl toprak analizi yok</div>';
+    document.getElementById('rapor-analizler').innerHTML=d.analizler.length?d.analizler.map(a=>{
+      const bahce = a.bahceAdi||a.bahce_adi||'Bahçe';
+      const puan = a.genel_puan||0;
+      return`<div style="background:var(--warm);border:1px solid var(--brd);border-radius:8px;padding:11px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div><div style="font-weight:500;font-size:.88rem">${bahce} — ${a.mevsim}</div><div style="font-size:.74rem;color:rgba(26,18,9,.38)">${a.bolge_adi||a.bolgeAdi||''}</div></div>
+        <div style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:700;color:${puan>=70?'var(--grn2)':puan>=45?'var(--g1)':'var(--r2)'}">${puan||'—'}<span style="font-size:.7rem;opacity:.4">/100</span></div>
+      </div>`;
+    }).join(''):'<div class="hempty">Bu yıl toprak analizi yok</div>';
     document.getElementById('rapor-verim').innerHTML=d.verimler.length?d.verimler.map(v=>`<div style="background:var(--warm);border:1px solid var(--brd);border-radius:8px;padding:11px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div><div style="font-weight:500;font-size:.88rem">${v.meyve}</div><div style="font-size:.74rem;color:rgba(26,18,9,.38)">${v.agac_sayisi?v.agac_sayisi+' ağaç · ':''}</div></div><div style="text-align:right"><div style="font-family:Fraunces,serif;font-size:1.1rem;font-weight:700;color:var(--grn)">${v.gerceklesen} kg/da</div><div style="font-size:.72rem;color:rgba(26,18,9,.36)">${v.hedef?'Hedef: '+v.hedef:''}</div></div></div>`).join(''):'<div class="hempty">Bu yıl verim kaydı yok</div>';
     document.getElementById('rapor-tedavi').innerHTML=d.tedaviler.length?d.tedaviler.map(t=>`<div style="background:var(--warm);border:1px solid var(--brd);border-radius:8px;padding:10px;margin-bottom:6px;font-size:.83rem"><strong>${t.ilac||'—'}</strong>${t.doz?' · '+t.doz:''}<br><span style="font-size:.72rem;color:rgba(26,18,9,.38)">${new Date(t.uygulama_tarihi).toLocaleDateString('tr-TR')}${t.notlar?' · '+t.notlar:''}</span></div>`).join(''):'<div class="hempty">Bu yıl tedavi kaydı yok</div>';
+    // Teşhisler bölümü
+    const teshisEl = document.getElementById('rapor-teshisler');
+    if(teshisEl && d.teshisler && d.teshisler.length){
+      const durumIco={saglikli:'✅',uyari:'⚠️',tehlike:'🚨'};
+      teshisEl.innerHTML = `<div class="slabel" style="margin:14px 0 8px">🔬 Hastalık Teşhisleri</div>` +
+        d.teshisler.map(t=>{
+          const s=t.sonuc||{};
+          const ico=durumIco[(s.durum||'').toLowerCase()]||'🔬';
+          const tarih=new Date(t.tarih).toLocaleDateString('tr-TR');
+          return `<div style="background:var(--warm);border:1px solid var(--brd);border-radius:8px;padding:10px;margin-bottom:6px;display:flex;gap:10px;align-items:flex-start;cursor:pointer" onclick="showTeshisDetay('${t.id}')">
+            <span style="font-size:1.1rem;flex-shrink:0">${ico}</span>
+            <div style="flex:1">
+              <div style="font-weight:500;font-size:.86rem">${s.tespit||'—'}</div>
+              <div style="font-size:.72rem;color:rgba(26,18,9,.4)">${t.meyveAdi||t.meyve_adi||t.meyve||'—'} &middot; ${s.siddet||''} &middot; ${tarih}</div>
+              ${s.kimyasal_onlem?`<div style="font-size:.75rem;color:rgba(26,18,9,.5);margin-top:3px">💊 ${s.kimyasal_onlem.slice(0,100)}${s.kimyasal_onlem.length>100?'…':''}</div>`:''}
+            </div>
+            <span style="font-size:.7rem;color:var(--b1);flex-shrink:0">📋 Detay</span>
+          </div>`;
+        }).join('');
+    } else if(teshisEl){
+      teshisEl.innerHTML='';
+    }
     document.getElementById('rapor-result').classList.add('show');
     document.getElementById('rapor-yazdir-btn').style.display='block';
     document.getElementById('rapor-result').scrollIntoView({behavior:'smooth',block:'start'});
