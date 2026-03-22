@@ -1,4 +1,3 @@
-try { require('dotenv').config(); } catch {} // Railway'de dotenv olmasa da çalışır
 /**
  * Bahçe Danışmanı — Backend v5.1
  * npm install express cors @google/generative-ai
@@ -19,14 +18,8 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyBxHUZyKp6-rTG8frjCNPMPZ9hkJbA_1xk';
-if (!GEMINI_API_KEY) {
-  console.error('❌ GEMINI_API_KEY env variable tanımlı değil!');
-  console.error('   Lokal: server.js içine yaz veya .env dosyası oluştur');
-  console.error('   Railway: Variables sekmesine GEMINI_API_KEY ekle');
-  process.exit(1);
-}
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+if (!GEMINI_API_KEY) { console.error('❌ GEMINI_API_KEY env variable tanımlı değil!'); process.exit(1); }const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 // Railway'de dosya sistemi ephemeral — DB dosyaları her deploy'da sıfırlanır.
 // Kalıcı veri için Railway Volume ekleyin veya Supabase sync kullanın.
@@ -465,56 +458,11 @@ app.post('/api/sync/gonder', async (req,res)=>{
     const {sbUrl,sbKey}=req.body;
     if(!sbUrl||!sbKey) return res.status(400).json({error:'sbUrl ve sbKey gerekli.'});
     const db=readDB(); const sonuclar={};
-
-    // analizler: camelCase → snake_case dönüşümü
-    const analizler = (db.analizler||[]).map(k=>{
-      const sonuc = k.sonuc||{};
-      return {
-        id             : k.id,
-        bahce_adi      : k.bahceAdi || k.bahce_adi || null,
-        mevsim         : k.mevsim || null,
-        yil            : k.yil || null,
-        tarih          : k.tarih || new Date().toISOString(),
-        genel_puan     : sonuc.genel_puan || null,
-        bolge_adi      : sonuc.bolge_adi || null,
-        toprak_tipi    : sonuc.toprak_tipi || null,
-        iklim_tipi     : sonuc.iklim_tipi || null,
-        ph_mevcut      : sonuc.ph_mevcut || null,
-        ph_durumu      : sonuc.ph_durumu || null,
-        organik_madde  : sonuc.organik_madde || null,
-        drenaj         : sonuc.drenaj || null,
-        tuzluluk_riski : sonuc.tuzluluk_riski || null,
-        genel_yorum    : sonuc.genel_yorum || null,
-        sonuc_json     : typeof sonuc === 'object' ? JSON.stringify(sonuc) : sonuc,
-      };
-    });
-
-    // Diğer tablolar
-    const agaclar   = (db.agaclar||[]);
-    const verim     = (db.verim||[]);
-    const tedaviler = (db.tedaviler||[]).map(t=>({
-      id: t.id,
-      ilac: t.ilac||null,
-      doz: t.doz||null,
-      uygulama_tarihi: t.uygulama_tarihi||t.tarih||new Date().toISOString(),
-      notlar: t.notlar||null,
-      tespit_id: t.tespit_id||null,
-    }));
-
-    const tablolar = [
-      {sb:'analizler', kayitlar:analizler},
-      {sb:'agaclar',   kayitlar:agaclar},
-      {sb:'verim',     kayitlar:verim},
-      {sb:'tedaviler', kayitlar:tedaviler},
-    ];
-
-    for(const {sb, kayitlar} of tablolar){
-      if(kayitlar.length>0){
-        const batches=[];
-        for(let i=0;i<kayitlar.length;i+=500) batches.push(kayitlar.slice(i,i+500));
-        for(const batch of batches) await sbRequest(sbUrl,sbKey,sb,'POST',batch,true);
-      }
-      sonuclar[sb]=kayitlar.length;
+    const tablolar=[{key:'analizler',sb:'analizler'},{key:'agaclar',sb:'agaclar'},{key:'verim',sb:'verim'},{key:'tedaviler',sb:'tedaviler'}];
+    for(const {key,sb} of tablolar){
+      const kayitlar=(db[key]||[]).map(k=>{const c={...k};if(c.sonuc&&typeof c.sonuc==='object')c.sonuc=JSON.stringify(c.sonuc);if(c.yapan&&typeof c.yapan==='object')c.yapan=JSON.stringify(c.yapan);return c;});
+      if(kayitlar.length>0){const batches=[];for(let i=0;i<kayitlar.length;i+=500)batches.push(kayitlar.slice(i,i+500));for(const batch of batches)await sbRequest(sbUrl,sbKey,sb,'POST',batch,true);}
+      sonuclar[key]=kayitlar.length;
     }
     res.json(sonuclar);
   } catch(err){console.error('Sync gönder:',err.message);res.status(500).json({error:err.message});}
