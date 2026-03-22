@@ -1037,7 +1037,7 @@ SB_KEY  = eyJhbGci...</div>
     <button class="mob-tab" data-tab="toprak"><span class="mt-ico">🌱</span><span class="mt-lbl">Toprak</span></button>
     <button class="mob-tab" data-tab="hava"><span class="mt-ico">🌤️</span><span class="mt-lbl">Hava</span></button>
     <button class="mob-tab" data-tab="harita"><span class="mt-ico">🗺️</span><span class="mt-lbl">Harita</span></button>
-    <button class="mob-tab" data-tab="supabase"><span class="mt-ico">☁️</span><span class="mt-lbl">Sync</span></button>
+    <button class="mob-tab" data-tab="arsiv"><span class="mt-ico">📂</span><span class="mt-lbl">Arşiv</span></button>
     <button class="mob-tab" data-tab="diger-menu"><span class="mt-ico">⋯</span><span class="mt-lbl">Diğer</span></button>
   </div>
 </div>
@@ -1047,7 +1047,7 @@ SB_KEY  = eyJhbGci...</div>
     <button class="mob-tab" data-tab="yabani-ot" style="min-width:unset"><span class="mt-ico">🌾</span><span class="mt-lbl">Ot</span></button>
     <button class="mob-tab" data-tab="takvim" style="min-width:unset"><span class="mt-ico">📅</span><span class="mt-lbl">Takvim</span></button>
     <button class="mob-tab" data-tab="rapor" style="min-width:unset"><span class="mt-ico">📑</span><span class="mt-lbl">Rapor</span></button>
-    <button class="mob-tab" data-tab="arsiv" style="min-width:unset"><span class="mt-ico">📂</span><span class="mt-lbl">Arşiv</span></button>
+    <button class="mob-tab" data-tab="supabase" style="min-width:unset"><span class="mt-ico">☁️</span><span class="mt-lbl">Sync</span></button>
   </div>
 </div>
 <!-- PWA INSTALL BANNER -->
@@ -2587,35 +2587,24 @@ function sbLog(msg, tip='ok'){
 
 async function sbIstatistik(){
   if(!sbUrl||!sbKey) return;
-  const el = document.getElementById('sb-istatistik');
-  if(!el) return;
-  // Yükleniyor göster
-  el.innerHTML = '<div style="font-size:.78rem;color:rgba(26,18,9,.4);grid-column:1/-1;text-align:center;padding:8px">⏳ Supabase bağlantısı kontrol ediliyor…</div>';
   try{
-    const tabloAdlar = ['analizler','agaclar','verim','tedaviler'];
+    const tabloAdlar = ['analizler','agaclar','verim','tedaviler','aktivite'];
     const sonuclar = await Promise.allSettled(tabloAdlar.map(t=>sbFetch(t,{select:'id'})));
-    const renkler = ['var(--e1)','var(--grn)','var(--g1)','var(--r1)'];
-    const ikonlar = ['🌱','🏡','📈','💊'];
+    const el = document.getElementById('sb-istatistik');
     el.innerHTML = tabloAdlar.map((t,i)=>{
       const ok = sonuclar[i].status==='fulfilled';
-      const sayi = ok ? (sonuclar[i].value?.length || 0) : '—';
+      const sayi = ok ? sonuclar[i].value?.length || 0 : '!';
+      const renkler = ['var(--e1)','var(--grn)','var(--g1)','var(--r1)','var(--b1)'];
       return `<div style="background:#fff;border:1px solid var(--brd);border-radius:9px;padding:10px;text-align:center;box-shadow:var(--shd)">
-        <div style="font-size:1.1rem;margin-bottom:3px">${ikonlar[i]}</div>
-        <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:${ok?renkler[i]:'rgba(26,18,9,.3)'}">${sayi}</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:${renkler[i]}">${sayi}</div>
         <div style="font-size:.7rem;color:rgba(26,18,9,.42);margin-top:2px">${t}</div>
       </div>`;
     }).join('');
     const durumEl = document.getElementById('sb-durum');
-    if(durumEl) durumEl.textContent = '✅ Supabase bağlantısı aktif';
+    if(durumEl) durumEl.textContent = 'Supabase bağlantısı aktif';
     const detayEl = document.getElementById('sb-sync-detay');
-    if(detayEl) detayEl.textContent = tabloAdlar.map((t,i)=>{
-      const ok2=sonuclar[i].status==='fulfilled';
-      return ok2?`${t}: ${sonuclar[i].value?.length||0}`:'';
-    }).filter(Boolean).join(' · ');
-  }catch(e){
-    el.innerHTML = `<div style="font-size:.8rem;color:var(--r2);grid-column:1/-1;padding:8px">❌ Supabase bağlantısı kurulamadı: ${e.message}</div>`;
-    sbLog('İstatistik alınamadı: '+e.message,'err');
-  }
+    if(detayEl) detayEl.textContent = tabloAdlar.map((t,i)=>{ const ok2=sonuclar[i].status==='fulfilled'; return ok2?`${t}: ${sonuclar[i].value?.length||0}`:''; }).filter(Boolean).join(' · ');
+  }catch(e){ sbLog('İstatistik alınamadı: '+e.message,'err'); }
 }
 
 // ⬇️ VERİ ÇEK (Supabase → Yerel)
@@ -2737,64 +2726,42 @@ function initSupabaseTab() {
   var logEl  = document.getElementById('sb-log');
   var durEl  = document.getElementById('sb-durum');
 
-  // Anlık değerleri forma yaz
   if(urlEl && sbUrl) urlEl.value = sbUrl;
   if(keyEl && sbKey) keyEl.value = sbKey;
 
-  // sbUrl/sbKey zaten yüklüyse hazır
-  if(sbUrl && sbKey){
-    if(uyari) uyari.style.display = 'none';
-    if(durEl) durEl.textContent = 'Bağlantı hazır — Veri Çek veya Gönder butonuna basın';
-    sbIstatistik();
-    return;
-  }
+  var yapılandırıldı = !!(sbUrl && sbKey);
 
-  // Yoksa sunucudan çekmeyi dene (Railway env vars veya config dosyası)
   if(uyari) {
-    uyari.style.display = 'block';
-    uyari.innerHTML = '⏳ Sunucu yapılandırması kontrol ediliyor…';
-  }
-  if(durEl) durEl.textContent = '';
-
-  fetch(API + '/api/config')
-    .then(function(r){ return r.json(); })
-    .then(function(cfg){
-      if(cfg.sbUrl) {
-        sbUrl = cfg.sbUrl;
-        if(urlEl) urlEl.value = sbUrl;
-        try{ localStorage.setItem('sb_config', JSON.stringify({url:sbUrl, key:sbKey})); }catch{}
-      }
-      if(cfg.sbKey) {
-        sbKey = cfg.sbKey;
-        if(keyEl) keyEl.value = sbKey;
-        try{ localStorage.setItem('sb_config', JSON.stringify({url:sbUrl, key:sbKey})); }catch{}
-      }
-
-      if(sbUrl && sbKey){
-        if(uyari) uyari.style.display = 'none';
-        if(durEl) durEl.textContent = 'Bağlantı hazır — Veri Çek veya Gönder butonuna basın';
-        // Railway env hint göster
-        var hint = document.getElementById('railway-env-hint');
-        var isRailway = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-        if(hint && isRailway) hint.style.display = 'block';
-        sbIstatistik();
-      } else {
-        if(uyari) {
-          uyari.style.display = 'block';
-          var isRailway = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-          uyari.innerHTML = isRailway
-            ? '☁️ Railway\'de Supabase ayarlanmamış. Variables\'a <strong>SB_URL</strong> ve <strong>SB_KEY</strong> ekleyin ya da aşağıya girerek Kaydet\'e basın.'
+    if(yapılandırıldı){
+      uyari.style.display = 'none';
+    } else {
+      // Sunucudan çekmeyi dene (Railway'de ayarlar sunucuda saklanır)
+      fetch(API + '/api/config').then(function(r){ return r.json(); }).then(function(cfg){
+        if(cfg.sbUrl) { sbUrl=cfg.sbUrl; if(urlEl) urlEl.value=sbUrl; try{localStorage.setItem('sb_config',JSON.stringify({url:sbUrl,key:sbKey}));}catch{} }
+        if(cfg.sbKey) { sbKey=cfg.sbKey; if(keyEl) keyEl.value=sbKey; try{localStorage.setItem('sb_config',JSON.stringify({url:sbUrl,key:sbKey}));}catch{} }
+        if(sbUrl && sbKey){
+          if(uyari) uyari.style.display='none';
+          if(durEl) durEl.textContent='Sunucudan yüklendi — hazır';
+          sbIstatistik();
+        } else {
+          uyari.style.display='block';
+          uyari.innerHTML = window.location.hostname!=='localhost'&&window.location.hostname!=='127.0.0.1'
+            ? '☁️ Railway üzerinden erişiyorsunuz. Supabase URL ve Key\'i girin, <strong>Kaydet</strong>\'e basın. Bir kez kaydedince tüm cihazlara uygulanır.'
             : '⚠️ Önce URL ve Anon Key girin, <strong>Ayarları Kaydet</strong>\'e basın.';
         }
-        if(durEl) durEl.textContent = '';
-      }
-    })
-    .catch(function(){
-      if(uyari) {
-        uyari.style.display = 'block';
-        uyari.innerHTML = '⚠️ Önce URL ve Anon Key girin, <strong>Ayarları Kaydet</strong>\'e basın.';
-      }
-    });
+      }).catch(function(){
+        uyari.style.display='block';
+        uyari.innerHTML='⚠️ Önce URL ve Anon Key girin, <strong>Ayarları Kaydet</strong>\'e basın.';
+      });
+      return; // async devam eder
+    }
+  }
+
+  if(yapılandırıldı) {
+    if(logEl) logEl.style.display = 'block';
+    if(durEl) durEl.textContent = 'Bağlantı hazır — Veri Çek veya Gönder butonuna basın';
+    sbIstatistik();
+  }
 }
 
 document.addEventListener('click', function(e) {
